@@ -36,6 +36,13 @@
 - Run `curl -L "http://127.0.0.1:8000/flights/results?from=EDI&to=KEF"` → a script is rerouted before any HTML is rendered.
 - Point at the **Flight search lanes** panel: "Agent traffic is on its own lane, so it never slows down real travellers. The gate you saw earlier becomes the step-up check for unclear cases."
 
+## 4c. Same idea, other industries (`/sites`), about 1 minute
+Open http://localhost:8000/sites, then run one or two of these, depending on which judge you're talking to:
+- **Wordsmith (legal):** `.venv\Scripts\python agents\site_agent.py contracts`. The agent gets rerouted, gpt-oss flags clauses 3, 4 and 7 as risky, and it signs **on behalf of** its principal. The site records a *delegated agent signature* and returns `pending_human_countersign` because clause 7 is high risk. "You always know whether a human or an agent signed, and on whose behalf."
+- **Ticketing:** `.venv\Scripts\python agents\site_agent.py tickets`. It reserves 2 tickets, then tries to scalp 4 more and gets **429 quota**. "Bots get their own queue and can't crowd out fans."
+- **Shopping:** `.venv\Scripts\python agents\site_agent.py shop`. It buys the limited drop, then tries a second pair and gets **429 drop limit**.
+- The dashboard's **Human vs agent lanes** panel shows every reroute with a site icon.
+
 ## 5. (Optional) `vision_agent.py` → VISION AGENT
 - "This one only sees screenshots, like a computer-use agent."
 - It answers correctly but **misses the hidden instruction**, because it reads pixels, not markup. The trap word is how we tell DOM agents from vision agents.

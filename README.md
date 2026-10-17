@@ -33,6 +33,22 @@ On a real site you wouldn't show humans a challenge at all. `/flights` is a mock
 curl -L "http://127.0.0.1:8000/flights/results?from=EDI&to=KEF"   # script → straight to the JSON lane
 ```
 
+## More demo sites: contracts, tickets, shopping (`/sites`)
+All of them use the same passive routing (`app/sites.py`, `static/lane.js`). Humans carry on in the normal UI, and agents land on `/agents/<site>` with a structured API and **agent-specific rules**:
+
+| Site | Human lane | Agent lane rules |
+|---|---|---|
+| ✍️ `/contracts` (Inkwell) | Typed signature, recorded with evidence that a person reviewed it | Structured clauses + risk flags. Agents sign **on behalf of a named principal** (recorded as a delegated agent signature, never a human one), must acknowledge flagged clauses, and **high-risk clauses need a human countersign** |
+| 🎟️ `/tickets` (Gigabox) | Fan queue position | Separate agent queue, **max 2 tickets per principal**, named and non-transferable tickets |
+| 👟 `/shop` (Thistle & Thread) | Add to basket | Product feed + checkout API, **1 pair per principal** during the drop |
+
+```
+.venv\Scripts\python agents\site_agent.py contracts   # LLM reviews the contract, signs on behalf of the principal → pending countersign
+.venv\Scripts\python agents\site_agent.py tickets     # reserves 2, then tries to scalp 4 more → 429 quota
+.venv\Scripts\python agents\site_agent.py shop        # buys size 9, then tries a second pair → 429 drop limit
+```
+Passive routing sends a visitor to the agent lane on `navigator.webdriver`, on zero interaction, or when the behaviour score is ≥ `ROUTE_AGENT_SCORE` (50, set high so real people are rarely misrouted).
+
 ## Setup (Windows / PowerShell)
 ```
 python -m venv .venv
