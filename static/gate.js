@@ -5,9 +5,10 @@
   const $ = (id) => document.getElementById(id);
   let challengeId = null, timerRAF = null;
   const params = new URLSearchParams(location.search);
+  let checkResult = null;
 
   // The checkbox: a silent behaviour check. Machine-like visitors are asked to prove it with the challenge;
-  // humans skip the wall of text and get the demo-site picker (the challenge stays available as a dare).
+  // humans skip the wall of text entirely and get the demo-site picker instead.
   $("tickbox").addEventListener("click", async () => {
     const box = $("tickbox");
     if (box.disabled) return;
@@ -17,7 +18,7 @@
     let r;
     try {
       const res = await fetch("/api/gate/check", {
-        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ telemetry: tel }),
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ telemetry: tel, ms_on_page: Math.round(performance.now()) }),
       });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       r = await res.json();
@@ -34,6 +35,7 @@
       setTimeout(startChallenge, 700);
     } else {
       box.className = "tick no";
+      checkResult = r;
       $("checkStatus").innerHTML = "<b>Hmm. That felt human.</b>";
       setTimeout(() => {
         $("pickerWhy").textContent = r.reasons.length ? `Detected: ${r.reasons.slice(0, 3).join(", ")}.` : "Detected: general carbon-based vibes.";
@@ -43,7 +45,16 @@
       }, 700);
     }
   });
-  $("tryChallenge").addEventListener("click", startChallenge);
+  $("pickerName").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const name = $("pickerNameInput").value.trim();
+    if (!name || !checkResult) return;
+    const res = await fetch("/api/name", { method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ attempt_id: checkResult.attempt_id, name, name_token: checkResult.name_token }) });
+    $("pickerName").innerHTML = res.ok
+      ? `<p class="lede">🏛️ <b>${esc(name)}</b> has been added to the Hall of Humans. Congratulations on being made of meat.</p>`
+      : `<p class="lede">Couldn't save that name. Refresh and tick the box again.</p>`;
+  });
 
   async function startChallenge() {
     const res = await fetch("/api/challenge", { method: "POST" });

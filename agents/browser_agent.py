@@ -33,11 +33,8 @@ def main():
         page.mouse.move(x, y, steps=4)
         page.mouse.click(x, y)
         page.wait_for_selector("#doc .clause, #picker:not(.hidden)")
-        if page.locator("#picker:not(.hidden)").count():  # judged human by the checkbox: take the dare
-            x, y = centre(page, "#tryChallenge")
-            page.mouse.move(x, y, steps=4)
-            page.mouse.click(x, y)
-        page.wait_for_selector("#doc .clause")
+        if page.locator("#picker:not(.hidden)").count():
+            raise SystemExit("The checkbox judged this agent human, so there is no challenge to solve.")
         question = page.locator("#question").text_content()
         doc = page.locator("#doc").text_content()  # includes visually hidden nodes
         print(f"[browser] read {len(doc.split())} words from the DOM. Q: {question}")

@@ -13,10 +13,10 @@
   };
   const ago = (ts) => { const s = Math.round(Date.now() / 1000 - ts); return s < 60 ? `${s}s ago` : `${Math.round(s / 60)}m ago`; };
 
-  const SITE_ICON = { gate: "⟲", flights: "✈️", contracts: "✍️", tickets: "🎟️", shop: "👟" };
+  const SITE_ICON = { gate: "⟲", flights: "✈️", contracts: "✍️", tickets: "🎟️", shop: "👟", jobs: "💼", news: "📰" };
   const siteLabel = (r) => {
     const q = r.query || {}, s = r.site || "flights";
-    const what = s === "gate" ? "gate checkbox" : s === "flights" ? `${q.from} → ${q.to}` : s === "contracts" ? "sign contract" : s === "tickets" ? `${q.qty || ""}× ${q.tier || "tickets"}` : `size ${q.size || "?"}`;
+    const what = s === "gate" ? "gate checkbox" : s === "flights" ? `${q.from} → ${q.to}` : s === "contracts" ? "sign contract" : s === "tickets" ? `${q.qty || ""}× ${q.tier || "tickets"}` : s === "shop" ? `size ${q.size || "?"}` : s === "jobs" ? `apply ${q.job || ""}` : "read article";
     return `${SITE_ICON[s] || ""} ${esc(what)}`;
   };
 
@@ -57,7 +57,7 @@
       <span class="why">${esc(a.name ? a.name + ": " : "")}${esc(topReasons(a.verdict, 2).join(" · "))}</span></li>`).join("")
       : `<li class="empty">No one yet. Go on, try it.</li>`;
     $("hall").innerHTML = d.hall.length ? d.hall.map((a) => `
-      <li><span class="nm">${esc(a.name)}</span><span class="st">${a.correct ? "✓ correct but" : a.given == null ? "no answer," : "off by £" + Math.abs(a.given - a.expected).toFixed(2) + ","} ${a.elapsed.toFixed(1)}s</span></li>`).join("")
+      <li><span class="nm">${esc(a.name)}</span><span class="st">${a.verdict.via === "checkbox" ? esc((a.verdict.reasons.human || [])[0] || "ticked the box like a human") : (a.correct ? "✓ correct but" : a.given == null ? "no answer," : "off by £" + Math.abs(a.given - a.expected).toFixed(2) + ",") + " " + a.elapsed.toFixed(1) + "s"}</span></li>`).join("")
       : `<li class="empty">Nobody has admitted to being human yet.</li>`;
     $("counts").innerHTML = Object.entries(d.stats).map(([k, n]) => `<span class="chip ${cls(k)}">${esc(k)} × ${n}</span>`).join("");
     renderImp(d);

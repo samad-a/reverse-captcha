@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Glenhire: tech jobs in Scotland</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/flights.css">
+<style>
+  :root { --sky: #0f3d3e; --sky2: #128c7e; --sun: #ffd166; }
+  body { background: #f4f8f7; }
+  .filter { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+  .filter input { flex: 1; min-width: 220px; font: 600 16px Inter; padding: 12px 14px; border: 2px solid var(--line); border-radius: 12px; }
+  .job { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; margin-bottom: 12px; }
+  .job h3 { margin: 0 0 4px; font-size: 19px; }
+  .job .meta { color: var(--muted); font-size: 14px; }
+  .job .tags span { display: inline-block; font: 600 12px "JetBrains Mono"; background: #e6f4f1; color: var(--sky); padding: 3px 8px; border-radius: 6px; margin: 6px 6px 0 0; }
+  .job .sal { font: 400 18px "Archivo Black"; text-align: right; }
+  .apply { font: 400 16px "Archivo Black"; background: var(--sky2); color: #fff; border: 0; border-radius: 10px; padding: 10px 20px; cursor: pointer; margin-top: 8px; }
+  .done { grid-column: 1 / -1; background: #e9f9f1; border: 2px solid var(--ok); border-radius: 12px; padding: 12px 14px; }
+  @media (max-width: 640px) { .job { grid-template-columns: 1fr; } .job .sal { text-align: left; } }
+</style>
+</head>
+<body>
+  <header class="top"><a class="brand" href="/jobs">glen<span>hire</span></a><nav><span>Jobs</span><span>Companies</span><span>Salaries</span></nav></header>
+  <section class="hero" style="padding-bottom:40px"><h1>Tech jobs in Scotland</h1><p>Real people read every application. Apply in two minutes.</p></section>
+  <main class="wrap">
+    <div class="filter"><label for="q" class="sr" style="position:absolute;left:-9999px">Search jobs</label><input id="q" placeholder="Search by title, skill or company"></div>
+    <div id="list"></div>
+    <div class="agent-note"><span class="rc">⟲</span><span><b>Applying with an AI assistant?</b> Agents get a job feed and an application API. Their applications are labelled as AI-assisted, with a daily cap, so mass-apply bots can't drown out real candidates.</span></div>
+  </main>
+  <script src="/static/telemetry.js"></script>
+  <script src="/static/lane.js"></script>
+  <script>
+  (async () => {
+    const jobs = await (await fetch("/api/sites/jobs/content")).json();
+    const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+    const k = (n) => `£${Math.round(n / 1000)}k`;
+    const render = () => {
+      const q = document.getElementById("q").value.toLowerCase();
+      document.getElementById("list").innerHTML = jobs.filter((j) => !q || JSON.stringify(j).toLowerCase().includes(q)).map((j) => `
+        <div class="job" id="job-${j.id}"><div><h3>${esc(j.title)}</h3><div class="meta">${esc(j.company)} · ${esc(j.location)} · ${esc(j.mode)}</div>
+          <div class="tags">${j.tags.map((t) => `<span>${esc(t)}</span>`).join("")}</div></div>
+          <div><div class="sal">${j.salary_gbp[0] === j.salary_gbp[1] ? k(j.salary_gbp[0]) : k(j.salary_gbp[0]) + "–" + k(j.salary_gbp[1])}</div>
+          <button class="apply" data-id="${j.id}">Easy apply →</button></div></div>`).join("");
+      document.querySelectorAll(".apply").forEach((b) => b.addEventListener("click", async () => {
+        const r = await RCRoute("jobs", { job: b.dataset.id });
+        if (!r) return;
+        const a = r.result.application;
+        const card = document.getElementById("job-" + b.dataset.id);
+        b.remove();
+        card.insertAdjacentHTML("beforeend", `<div class="done">✅ <b>Application started</b> for ${esc(a.job.title)} at ${esc(a.job.company)}, as a human candidate. ${esc(a.next)}</div>`);
+      }));
+    };
+    document.getElementById("q").addEventListener("input", render);
+    render();
+  })();
+  </script>
+</body>
+</html>

@@ -244,7 +244,7 @@ def airports():
 
 
 # ---- More demo sites: contract signing, event ticketing, online shopping ---------------------------------------
-DEMO_SITES = ("contracts", "tickets", "shop")
+DEMO_SITES = ("contracts", "tickets", "shop", "jobs", "news")
 
 
 @app.get("/sites")
@@ -255,6 +255,8 @@ def sites_hub():
 @app.get("/contracts")
 @app.get("/tickets")
 @app.get("/shop")
+@app.get("/jobs")
+@app.get("/news")
 def site_page(req: Request):
     return FileResponse(os.path.join(STATIC, req.url.path.strip("/") + ".html"), headers={"Cache-Control": "no-store"})
 
@@ -300,7 +302,10 @@ async def site_agent_action(site: str, action: str, req: Request):
 @app.get("/api/sites/{site}/content")
 def site_content(site: str):
     """Public content the human pages render (contract text, event, product)."""
-    return {"contracts": sites.CONTRACT, "tickets": sites.EVENT, "shop": sites.PRODUCT}.get(site) or {}
+    news_preview = {**{k: v for k, v in sites.ARTICLE.items() if k != "paragraphs"},
+                    "paragraphs": sites.ARTICLE["paragraphs"][:2]}  # the rest unlocks via the human lane
+    return {"contracts": sites.CONTRACT, "tickets": sites.EVENT, "shop": sites.PRODUCT, "jobs": sites.JOBS,
+            "news": news_preview}.get(site) or {}
 
 
 @app.post("/api/gate/check")
@@ -309,4 +314,18 @@ async def gate_check(req: Request):
     body = await _body(req)
     lane, why, robot_score, reasons, f = sites.decide_lane(body.get("telemetry"))
     db.add_route(lane, why, {}, robot_score, f, site="gate")
-    return {"lane": lane, "reason": why, "robot_score": robot_score, "reasons": reasons}
+    out = {"lane": lane, "reason": why, "robot_score": robot_score, "reasons": reasons}
+    if lane == "human":
+        # Humans never see the reading challenge. Their checkbox verdict is the attempt that drives the
+        # dashboard meter, feed and Hall of Humans (and becomes HUMAN training data).
+        _, robot, human = classifier.behaviour(f)
+        ms = body.get("ms_on_page")
+        elapsed = round(ms / 1000, 2) if isinstance(ms, (int, float)) and 0 <= ms < 1e8 else 0.0
+        v = {"label": classifier.HUMAN, "likely": classifier.HUMAN, "confidence": round(1 - robot_score / 200, 2),
+             "machine_score": int(robot_score * 0.5), "robot_score": robot_score, "passed": False, "elapsed": elapsed,
+             "reasons": {"challenge": ["ticked the box like a human"], "robotic": robot, "human": human},
+             "model": "rules", "via": "checkbox"}
+        token = secrets.token_urlsafe(16)
+        out["attempt_id"] = db.add_attempt(v, f, False, False, None, None, token=token)
+        out["name_token"] = token
+    return out

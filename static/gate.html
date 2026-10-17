@@ -44,8 +44,11 @@
         <a href="/contracts"><div class="ico">✍️</div><b>Contract signing</b><p>Agents sign <i>on behalf of</i> a named person. Risky clauses need a human.</p></a>
         <a href="/tickets"><div class="ico">🎟️</div><b>Event tickets</b><p>A separate agent queue with a 2-ticket quota, so scalper bots can't crowd out fans.</p></a>
         <a href="/shop"><div class="ico">👟</div><b>Limited drop</b><p>Product feed for agents, with 1 pair per real customer.</p></a>
+        <a href="/jobs"><div class="ico">💼</div><b>Job board</b><p>Agents apply through an API, labelled as AI-assisted, and can't mass-apply.</p></a>
+        <a href="/news"><div class="ico">📰</div><b>News</b><p>AI crawlers get a licensed content API instead of scraping articles for free.</p></a>
       </div>
-      <p style="margin-top:22px"><button id="tryChallenge" class="big-btn small yellow">Think you can pass as a machine? Try the 6-second test ⟲</button></p>
+      <form class="namebox" id="pickerName" autocomplete="off"><input id="pickerNameInput" maxlength="24" placeholder="Name for the Hall of Humans">
+        <button class="big-btn small yellow">Immortalise my humanity</button></form>
     </section>
 
     <!-- STEP 2: challenge (filled by JS only after Enter) -->

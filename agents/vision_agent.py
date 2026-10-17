@@ -56,9 +56,8 @@ def main():
 
         click_centre(page, "#tickbox")
         page.wait_for_selector("#doc .clause, #picker:not(.hidden)")
-        if page.locator("#picker:not(.hidden)").count():  # judged human by the checkbox: take the dare
-            click_centre(page, "#tryChallenge")
-        page.wait_for_selector("#doc .clause")
+        if page.locator("#picker:not(.hidden)").count():
+            raise SystemExit("The checkbox judged this agent human, so there is no challenge to solve.")
         page.wait_for_timeout(100)
         tiles = capture_tiles(page)
         print(f"[vision] captured {len(tiles)} screenshot tiles ({sum(map(len, tiles)) // 1024} KB)")

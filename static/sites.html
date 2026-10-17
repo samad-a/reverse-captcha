@@ -19,7 +19,9 @@
         <a href="/contracts"><div class="ico">✍️</div><b>Contract signing</b><p>Agents get structured clauses and risk flags, and sign <i>on behalf of</i> a named person. High-risk clauses need a human countersign.</p><code>agents\site_agent.py contracts</code></a>
         <a href="/tickets"><div class="ico">🎟️</div><b>Event ticketing</b><p>A separate agent queue with a 2-ticket quota per real person. Scalper bots can't crowd out fans.</p><code>agents\site_agent.py tickets</code></a>
         <a href="/shop"><div class="ico">👟</div><b>Online shopping</b><p>Product feed and checkout API, with a limit of 1 pair per customer during the drop.</p><code>agents\site_agent.py shop</code></a>
-        <a href="/"><div class="ico">⟲</div><b>The gate</b><p>The step-up check: prove you're <i>not</i> human. Used for ambiguous visitors or high-stakes actions.</p><code>agents\browser_agent.py</code></a>
+        <a href="/jobs"><div class="ico">💼</div><b>Job board</b><p>Agents apply through an API, labelled as AI-assisted, with a daily cap so they can't mass-apply.</p><code>agents\site_agent.py jobs</code></a>
+        <a href="/news"><div class="ico">📰</div><b>News</b><p>AI crawlers get a licensed content API: summaries free, full text with attribution, no training use, and bulk crawling costs money.</p><code>agents\site_agent.py news</code></a>
+        <a href="/"><div class="ico">⟲</div><b>The gate</b><p>Tick the box: humans get this picker, and machine-like visitors must prove they're machines.</p><code>agents\browser_agent.py</code></a>
       </div>
     </section>
   </main>

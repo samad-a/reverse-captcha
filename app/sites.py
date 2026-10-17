@@ -84,6 +84,58 @@ AGENT_SHOP_POLICY = {"max_units_per_principal_during_drop": 1, "checkout": "POST
                      "requires": ["principal", "size", "delivery"]}
 
 
+# ---- Job board: "Glenhire" ---------------------------------------------------------------------------------
+JOBS = [
+    {"id": "J101", "title": "Python Developer", "company": "Northlight Studio", "location": "Edinburgh", "mode": "hybrid", "salary_gbp": [45000, 55000], "tags": ["python", "fastapi", "postgres"]},
+    {"id": "J102", "title": "Data Engineer", "company": "Caledonia Analytics", "location": "Glasgow", "mode": "remote", "salary_gbp": [55000, 65000], "tags": ["python", "spark", "dbt"]},
+    {"id": "J103", "title": "Machine Learning Engineer", "company": "Haar Labs", "location": "Edinburgh", "mode": "on-site", "salary_gbp": [60000, 75000], "tags": ["pytorch", "llms", "python"]},
+    {"id": "J104", "title": "Frontend Developer", "company": "Thistle & Thread", "location": "UK", "mode": "remote", "salary_gbp": [40000, 50000], "tags": ["typescript", "react"]},
+    {"id": "J105", "title": "DevOps Engineer", "company": "Kestrel Cloud", "location": "Aberdeen", "mode": "hybrid", "salary_gbp": [50000, 60000], "tags": ["kubernetes", "terraform"]},
+    {"id": "J106", "title": "Graduate Software Engineer", "company": "Firth Bank", "location": "Edinburgh", "mode": "hybrid", "salary_gbp": [32000, 32000], "tags": ["java", "graduate"]},
+]
+AGENT_JOB_POLICY = {
+    "max_applications_per_principal_per_day": 3,
+    "disclosure": "Agent applications are shown to employers as 'AI-assisted, on behalf of <principal>'",
+    "requires": ["principal", "job_id", "cover_note", "candidate_confirmed"],
+    "why": "Stops mass auto-apply bots flooding employers, so human applications still get read.",
+}
+
+# ---- News: "The Haar Herald" ---------------------------------------------------------------------------------
+ARTICLE = {
+    "id": "HH-2026-1114",
+    "headline": "Edinburgh trams to run through the night in festival trial",
+    "standfirst": "A three-week pilot next August will test 24-hour services between the airport and Newhaven, "
+                  "with the council promising a decision on a permanent timetable by spring.",
+    "author": "Morag Lindsay, Transport Correspondent",
+    "published": "2026-11-14T07:30:00Z",
+    "paragraphs": [
+        "Trams will run around the clock between Edinburgh Airport and Newhaven for three weeks next August, "
+        "in a trial the city council says could become permanent if passenger numbers justify the cost.",
+        "Services will run every 20 minutes between midnight and 5am during the pilot, which coincides with the "
+        "busiest weeks of the festival season, when hotels and late-night venues report the most demand.",
+        "The council estimates the trial will cost around £420,000, including extra staff, security and "
+        "maintenance carried out during daytime closures on two Sundays.",
+        "Hospitality groups welcomed the plan, saying a lack of late transport forced staff to rely on taxis that "
+        "can cost more than a shift's wages. Residents along Leith Walk raised concerns about noise.",
+        "A decision on whether to make night services permanent is expected by March, after the council reviews "
+        "ridership data, complaints and the impact on maintenance schedules.",
+    ],
+    "tags": ["transport", "edinburgh", "festival"],
+}
+ARCHIVE = [{"id": f"HH-2026-{1000 + i}", "headline": h} for i, h in enumerate([
+    "Fringe ticket sales hit record high", "Leith Walk cycle lane reopens", "Portobello beach clean draws hundreds",
+    "Castle esplanade seating plan approved", "New ferry route to Fife announced", "Waverley roof repairs delayed",
+    "Haar warning for Forth crossings", "Meadows tree survey published", "Council backs short-let cap",
+    "Hibs and Hearts share stadium upgrade fund"], start=1)]
+NEWS_LICENSE = {
+    "price_per_article_gbp": 0.01,
+    "free_articles_per_principal": 3,
+    "attribution_required": "Source: The Haar Herald (link to the article)",
+    "ai_training_use": False,
+    "why": "Crawlers pay for what they read instead of scraping it for free and skipping the ads that fund reporting.",
+}
+
+
 def human_result(site, q, telemetry_features):
     """What a human sees after pressing the button (rendered inline by the page)."""
     if site == "contracts":
@@ -99,6 +151,12 @@ def human_result(site, q, telemetry_features):
     if site == "shop":
         return {"basket": [{"sku": PRODUCT["sku"], "name": PRODUCT["name"], "size": q.get("size"), "qty": 1,
                             "price_gbp": PRODUCT["price_gbp"]}]}
+    if site == "jobs":
+        job = next((j for j in JOBS if j["id"] == q.get("job")), None)
+        return {"application": {"job": job, "status": "started", "by": "candidate (human)",
+                                "next": "Upload your CV and answer two questions (not part of this demo)."}}
+    if site == "news":
+        return {"paragraphs": ARTICLE["paragraphs"][2:]}
     return {}
 
 
@@ -120,12 +178,25 @@ def agent_payload(site, q):
         return {"site": "Thistle & Thread", "lane": "agent",
                 "message": "Agent lane: product feed and checkout API. Drop limits are enforced per principal.",
                 "product": PRODUCT, "agent_policy": AGENT_SHOP_POLICY}
+    if site == "jobs":
+        return {"site": "Glenhire", "lane": "agent",
+                "message": "Agent lane: job feed and an application API. Agent applications are labelled as "
+                           "AI-assisted, and there is a daily cap, so bots can't mass-apply.",
+                "jobs": JOBS, "agent_policy": AGENT_JOB_POLICY,
+                "apply": {"endpoint": "POST /api/agents/jobs/apply", "requires": AGENT_JOB_POLICY["requires"]}}
+    if site == "news":
+        return {"site": "The Haar Herald", "lane": "agent",
+                "message": "Agent lane: licensed content API. Headlines and summaries are free; full text needs a "
+                           "licence with attribution, and AI training use is not allowed.",
+                "article": {k: ARTICLE[k] for k in ("id", "headline", "standfirst", "author", "published", "tags")},
+                "full_text": "withheld: POST /api/agents/news/license", "license": NEWS_LICENSE,
+                "archive": ARCHIVE}
     return {}
 
 
 # simple in-memory quotas for the demo
-_ticket_quota, _shop_quota = {}, {}
-ACTIONS = {"contracts": "sign", "tickets": "reserve", "shop": "order"}
+_ticket_quota, _shop_quota, _job_quota, _news_quota = {}, {}, {}, {}
+ACTIONS = {"contracts": "sign", "tickets": "reserve", "shop": "order", "jobs": "apply", "news": "license"}
 
 
 def _int(x, default=None):
@@ -176,4 +247,37 @@ def agent_action(site, action, body):
         _shop_quota[principal] = 1
         return 200, {"status": "ordered", "sku": PRODUCT["sku"], "size": size, "for": principal,
                      "delivery": body.get("delivery", "standard"), "total_gbp": PRODUCT["price_gbp"]}
+    if site == "jobs":
+        job = next((j for j in JOBS if j["id"] == str(body.get("job_id", "")).strip()), None)
+        if not job:
+            return 422, {"error": "Unknown job_id", "jobs": [j["id"] for j in JOBS]}
+        if body.get("candidate_confirmed") is not True:
+            return 422, {"error": "The candidate must confirm this application (candidate_confirmed: true)."}
+        if not str(body.get("cover_note", "")).strip():
+            return 422, {"error": "A cover note is required."}
+        applied = _job_quota.setdefault(principal, [])
+        if job["id"] in applied:
+            return 409, {"error": f"Already applied to {job['id']}."}
+        cap = AGENT_JOB_POLICY["max_applications_per_principal_per_day"]
+        if len(applied) >= cap:
+            return 429, {"error": f"Daily cap: agents can submit {cap} applications per candidate per day. No mass-applying."}
+        applied.append(job["id"])
+        return 200, {"status": "submitted", "job": f"{job['title']} at {job['company']}",
+                     "shown_to_employer_as": f"AI-assisted application on behalf of {principal}",
+                     "applications_left_today": cap - len(applied)}
+    if site == "news":
+        aid = str(body.get("article_id", "")).strip()
+        if aid not in {ARTICLE["id"]} | {a["id"] for a in ARCHIVE}:
+            return 422, {"error": "Unknown article_id"}
+        if body.get("accept_terms") is not True:
+            return 422, {"error": "Accept the licence terms first (accept_terms: true).", "license": NEWS_LICENSE}
+        used = _news_quota.setdefault(principal, set())
+        if aid not in used and len(used) >= NEWS_LICENSE["free_articles_per_principal"]:
+            return 402, {"error": "Payment required: free allowance used. Bulk access needs a paid licence.",
+                         "price_per_article_gbp": NEWS_LICENSE["price_per_article_gbp"]}
+        used.add(aid)
+        return 200, {"status": "licensed", "article_id": aid,
+                     "full_text": ARTICLE["paragraphs"] if aid == ARTICLE["id"] else ["(archive article text)"],
+                     "attribution": NEWS_LICENSE["attribution_required"], "ai_training_use": False,
+                     "free_articles_left": NEWS_LICENSE["free_articles_per_principal"] - len(used)}
     return 404, {"error": "unknown site"}

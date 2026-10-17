@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The Haar Herald</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&family=Playfair+Display:wght@700;900&display=swap" rel="stylesheet">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/flights.css">
+<style>
+  :root { --sky: #1a1a1a; --sky2: #b3261e; --sun: #b3261e; }
+  body { background: #fbfaf7; }
+  .top { border-bottom: 4px double #fff; }
+  .masthead { font: 900 clamp(28px, 5vw, 44px) "Playfair Display", serif; color: #fff; text-decoration: none; }
+  article { max-width: 720px; margin: 0 auto; padding: 32px 24px 60px; font-family: Georgia, serif; }
+  .kicker { font: 700 13px Inter; color: var(--sky2); text-transform: uppercase; letter-spacing: 1px; }
+  h1.hl { font: 900 clamp(30px, 5vw, 46px)/1.1 "Playfair Display", serif; margin: 8px 0 12px; }
+  .stand { font-size: 20px; color: #444; line-height: 1.5; margin: 0 0 14px; }
+  .by { font: 600 14px Inter; color: var(--muted); border-bottom: 1px solid var(--line); padding-bottom: 14px; margin-bottom: 18px; }
+  article p.body { font-size: 18px; line-height: 1.7; margin: 0 0 16px; }
+  .ad { border: 1px dashed #bbb; color: #999; text-align: center; padding: 26px; font: 600 12px Inter; letter-spacing: 1px; margin: 18px 0; }
+  .fade { position: relative; }
+  .fade::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 80px; background: linear-gradient(transparent, #fbfaf7); }
+  #moreBtn { font: 400 18px "Archivo Black"; background: var(--sky2); color: #fff; border: 0; border-radius: 10px; padding: 14px 28px; cursor: pointer; display: block; margin: 10px auto 0; }
+</style>
+</head>
+<body>
+  <header class="top"><a class="masthead" href="/news">The Haar Herald</a><nav><span>News</span><span>Politics</span><span>Culture</span><span>Sport</span></nav></header>
+  <article>
+    <div class="kicker">Transport</div>
+    <h1 class="hl" id="hl">Loading…</h1>
+    <p class="stand" id="stand"></p>
+    <div class="by" id="by"></div>
+    <div id="body" class="fade"></div>
+    <button id="moreBtn">Continue reading →</button>
+    <div id="rest"></div>
+    <div class="agent-note"><span class="rc">⟲</span><span><b>AI crawler?</b> You'll be routed to our licensed content API: headlines free, full text with attribution, and no AI training use. Readers get the normal paper.</span></div>
+  </article>
+  <script src="/static/telemetry.js"></script>
+  <script src="/static/lane.js"></script>
+  <script>
+  (async () => {
+    const a = await (await fetch("/api/sites/news/content")).json();
+    const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+    document.getElementById("hl").textContent = a.headline;
+    document.getElementById("stand").textContent = a.standfirst;
+    document.getElementById("by").textContent = `${a.author} · ${new Date(a.published).toLocaleString("en-GB", { dateStyle: "long", timeStyle: "short" })}`;
+    document.getElementById("body").innerHTML = a.paragraphs.map((p) => `<p class="body">${esc(p)}</p>`).join("");
+    document.getElementById("moreBtn").addEventListener("click", async () => {
+      const r = await RCRoute("news", { article: a.id });
+      if (!r) return;
+      document.getElementById("moreBtn").remove();
+      document.getElementById("body").classList.remove("fade");
+      document.getElementById("rest").innerHTML = `<div class="ad">ADVERTISEMENT · this is what pays for the journalism</div>` +
+        r.result.paragraphs.map((p) => `<p class="body">${esc(p)}</p>`).join("");
+    });
+  })();
+  </script>
+</body>
+</html>

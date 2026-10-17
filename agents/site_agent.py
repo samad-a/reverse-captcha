@@ -1,9 +1,11 @@
-"""Agent for the contract / ticket / shop demo sites. It uses the human page like an automation script, gets
+"""Agent for the contract / ticket / shop / jobs / news demo sites. It uses the human page like an automation script, gets
 silently rerouted to the agent lane, then completes the task through the agent API (and hits the agent rules).
 
     python agents/site_agent.py contracts   # review contract with the LLM, sign *on behalf of* the principal
     python agents/site_agent.py tickets     # buy tickets, then try to scalp more -> quota
     python agents/site_agent.py shop        # buy the limited drop, then try a second pair -> drop limit
+    python agents/site_agent.py jobs        # LLM picks the best job + cover note, then tries to mass-apply -> daily cap
+    python agents/site_agent.py news        # license + summarise the article, then try to bulk-crawl -> 402 payment required
 Options: --headless  --principal "Alex Morgan"
 """
 import argparse
@@ -39,6 +41,12 @@ def use_human_page(page, site):
         page.wait_for_selector(".sizes button")
         click_centre(page, '.sizes button[data-s="9"]')
         click_centre(page, "#addBtn")
+    elif site == "jobs":
+        page.wait_for_selector(".apply")
+        click_centre(page, ".apply")
+    elif site == "news":
+        page.wait_for_selector("#body p")
+        click_centre(page, "#moreBtn")
 
 
 def show(label, status, body):
@@ -92,11 +100,45 @@ def complete_in_agent_lane(site, data, api, principal):
             show("shop order", r.status_code, r.json())
             r = api.post("/api/agents/shop/order", json=body)
             show("shop try a second pair", r.status_code, r.json())
+    elif site == "jobs":
+        jobs = data["jobs"]
+        profile = "Python developer, 4 years' experience, lives in Edinburgh, wants hybrid or remote, minimum £50k"
+        raw, s, _ = ask_hedged(f"Jobs: {json.dumps(jobs)}\nCandidate: {profile}.\nWhich single job is the best fit? "
+                               "Then write a two-sentence cover note.",
+                               system="You are a job-application agent. Write the cover note, then finish with "
+                                      "`ANSWER: <job id>`.", max_tokens=1500)
+        pick = final_answer(raw).strip(" .")
+        best = next((j for j in jobs if j["id"] in pick), jobs[0])
+        note = raw.split("ANSWER")[0].strip()[-400:] or "I'd love to apply."
+        print(f"[jobs] {model_name()} picked {best['id']} ({best['title']} at {best['company']}) in {s:.1f}s")
+        r = api.post("/api/agents/jobs/apply", json={"principal": principal, "job_id": best["id"], "cover_note": note,
+                                                     "candidate_confirmed": True})
+        show(f"jobs apply {best['id']}", r.status_code, r.json())
+        print("[jobs] now trying to mass-apply to every other job…")
+        for j in jobs:
+            if j["id"] != best["id"]:
+                r = api.post("/api/agents/jobs/apply", json={"principal": principal, "job_id": j["id"],
+                                                             "cover_note": note, "candidate_confirmed": True})
+                show(f"jobs apply {j['id']}", r.status_code, r.json())
+    elif site == "news":
+        art = data["article"]
+        r = api.post("/api/agents/news/license", json={"principal": principal, "article_id": art["id"], "accept_terms": True})
+        show("news license article", r.status_code, {k: v for k, v in r.json().items() if k != "full_text"})
+        if r.status_code == 200:
+            text = "\n".join(r.json()["full_text"])
+            raw, s, _ = ask_hedged(f"ARTICLE: {art['headline']}\n{text}\n\nSummarise for the user in two sentences.",
+                                   system="You are a news agent. Be factual and brief.", max_tokens=800)
+            print(f"[news] {model_name()} summary ({s:.1f}s): {raw.strip()}\n    — {r.json()['attribution']}")
+        print("[news] now trying to bulk-crawl the archive for free…")
+        for a in data["archive"][:5]:
+            r = api.post("/api/agents/news/license", json={"principal": principal, "article_id": a["id"], "accept_terms": True})
+            body = r.json()
+            show(f"news license {a['id']}", r.status_code, {k: v for k, v in body.items() if k != "full_text"})
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("site", choices=["contracts", "tickets", "shop"])
+    ap.add_argument("site", choices=["contracts", "tickets", "shop", "jobs", "news"])
     ap.add_argument("--url", default="http://127.0.0.1:8000")
     ap.add_argument("--headless", action="store_true")
     ap.add_argument("--principal", default=f"Alex Morgan #{int(time.time()) % 10000}")
