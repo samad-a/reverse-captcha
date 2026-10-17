@@ -38,6 +38,10 @@ ROBOT_SCORE_BROWSER = 40   # >= this counts as "robotic behaviour"
 ROBOT_SCORE_HUMANLIKE = 20 # <= this counts as "human-like behaviour"
 AMBIGUOUS_CONFIDENCE = 0.6 # below this confidence, label is shown as UNCERTAIN
 
+# ---- Flight search lanes (passive routing, no challenge) -------------------
+ROUTE_AGENT_SCORE = 40     # robot_score >= this on the search page -> agent lane
+SCRIPT_UA_PATTERN = r"python|httpx|requests|curl|wget|aiohttp|go-http|okhttp|scrapy|headless"
+
 # ---- ML (M5) ---------------------------------------------------------------
 MODEL_PATH = os.path.join(os.path.dirname(__file__), "..", "ml", "model.joblib")
 IMPORTANCES_PATH = os.path.join(os.path.dirname(__file__), "..", "ml", "importances.json")

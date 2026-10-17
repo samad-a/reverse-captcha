@@ -15,7 +15,27 @@ CREATE TABLE IF NOT EXISTS attempts (
   elapsed REAL, correct INTEGER, trap INTEGER, given REAL, expected REAL,
   features TEXT, verdict TEXT, name TEXT, true_label TEXT, token TEXT, archived INTEGER DEFAULT 0
 );
+CREATE TABLE IF NOT EXISTS routes (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  ts REAL, lane TEXT, reason TEXT, query TEXT, robot_score INTEGER, features TEXT, archived INTEGER DEFAULT 0
+);
 """)
+
+
+def add_route(lane, reason, query, robot_score=0, f=None):
+    with _lock:
+        _conn.execute("INSERT INTO routes (ts,lane,reason,query,robot_score,features) VALUES (?,?,?,?,?,?)",
+                      (time.time(), lane, reason, json.dumps(query), robot_score, json.dumps(f or {})))
+        _conn.commit()
+
+
+def lanes():
+    counts = {r["lane"]: r["c"] for r in _conn.execute(
+        "SELECT lane, COUNT(*) c FROM routes WHERE archived=0 GROUP BY lane").fetchall()}
+    rows = _conn.execute("SELECT id, ts, lane, reason, query, robot_score FROM routes WHERE archived=0 "
+                         "ORDER BY id DESC LIMIT 8").fetchall()
+    return {"human": counts.get("human", 0), "agent": counts.get("agent", 0),
+            "recent": [{**dict(r), "query": json.loads(r["query"])} for r in rows]}
 
 
 def add_attempt(v, f, correct, trap, given, expected, true_label=None, token=None):
@@ -70,6 +90,7 @@ def reset():
     """Soft reset: hides attempts from the dashboard but keeps them as training data."""
     with _lock:
         _conn.execute("UPDATE attempts SET archived=1")
+        _conn.execute("UPDATE routes SET archived=1")
         _conn.commit()
 
 

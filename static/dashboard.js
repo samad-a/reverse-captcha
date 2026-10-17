@@ -13,7 +13,18 @@
   };
   const ago = (ts) => { const s = Math.round(Date.now() / 1000 - ts); return s < 60 ? `${s}s ago` : `${Math.round(s / 60)}m ago`; };
 
+  function renderLanes(L) {
+    if (!L) return;
+    $("laneH").textContent = L.human; $("laneA").textContent = L.agent;
+    const tot = L.human + L.agent || 1;
+    $("splitH").style.width = `${100 * L.human / tot}%`; $("splitA").style.width = `${100 * L.agent / tot}%`;
+    $("routes").innerHTML = L.recent.length ? L.recent.map((r) => `<li><span class="chip ${r.lane === "agent" ? "SCRAPER" : "HUMAN"}">${r.lane === "agent" ? "REROUTED" : "HUMAN"}</span>
+      <span>${esc(r.query.from)} → ${esc(r.query.to)}</span><span class="why">${esc(r.reason)}</span></li>`).join("")
+      : `<li class="empty">No searches yet. Try /flights</li>`;
+  }
+
   function render(d) {
+    renderLanes(d.lanes);
     const L = d.latest;
     if (L && L.id !== lastId) {
       lastId = L.id;

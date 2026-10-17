@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Haarline: cheap flights from Scotland</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/flights.css">
+</head>
+<body>
+  <header class="top">
+    <a class="brand" href="/flights">haar<span>line</span></a>
+    <nav><span>Flights</span><span>Hotels</span><span>Car hire</span><span>Explore</span></nav>
+  </header>
+  <section class="hero">
+    <h1>Where to next?</h1>
+    <p>Search hundreds of airlines. No pop-ups, no puzzles. Agents get their own lane.</p>
+  </section>
+
+  <form class="search" id="searchForm" autocomplete="off">
+    <div class="field"><label for="from">From</label><select id="from" name="from"></select></div>
+    <div class="field"><label for="to">To</label><select id="to" name="to"></select></div>
+    <div class="field"><label for="depart">Depart</label><input id="depart" name="depart" type="date"></div>
+    <div class="field"><label for="ret">Return</label><input id="ret" name="return" type="date"></div>
+    <div class="field"><label for="pax">Travellers</label>
+      <select id="pax" name="pax"><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
+    <button id="searchBtn" type="submit">Search →</button>
+  </form>
+
+  <main class="wrap">
+    <div class="tiles">
+      <div class="tile"><b>Reykjavik from £89</b><small>Northern lights season · direct from EDI</small></div>
+      <div class="tile"><b>Barcelona from £54</b><small>Weekend escapes · 2h 40m</small></div>
+      <div class="tile"><b>Prague from £61</b><small>Christmas markets · from GLA</small></div>
+      <div class="tile"><b>New York from £279</b><small>Winter sale · 1 stop</small></div>
+    </div>
+    <div class="agent-note"><span class="rc">⟲</span>
+      <span><b>Protected by Reverse CAPTCHA.</b> Humans search as normal. Automated agents are routed to a dedicated agent lane
+        (<code>/api/agents/search</code>), so bot traffic never slows down real travellers.</span></div>
+  </main>
+
+  <div id="overlay" class="overlay hidden"><div class="box">
+    <div class="spinner" id="spin"></div>
+    <div class="lane" id="laneText">Searching…</div>
+    <div class="why" id="laneWhy"></div>
+  </div></div>
+
+  <script src="/static/telemetry.js"></script>
+  <script src="/static/flights.js"></script>
+</body>
+</html>

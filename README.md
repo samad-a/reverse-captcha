@@ -19,6 +19,20 @@ AI agents increasingly browse, book flights and sign documents for people. Sites
 | `browser_agent.py` | teleporting, straight, dead-centre, webdriver | fast + correct | ✓ | BROWSER AGENT |
 | `vision_agent.py` | robotic | correct | ✗ | VISION AGENT |
 
+## Passive routing: the flight-search demo (`/flights`)
+On a real site you wouldn't show humans a challenge at all. `/flights` is a mock flight-search site ("Haarline") with a working search form and **no CAPTCHA**:
+- The same telemetry runs silently. Pressing **Search** posts it to `/api/flights/route`, which scores behaviour only.
+- **Humans** → `/flights/results` (normal UI, mock results).
+- **Obvious agents** (webdriver, synthetic or teleporting input, robot score ≥ `ROUTE_AGENT_SCORE`) → `/agents/search`, carrying their search with them: same inventory as structured JSON, so agent traffic stays off the human lane. There is an "I'm human, take me back" escape link because false positives must never block anyone.
+- **Scripts with no browser** that hit `/flights/results` directly are rerouted on the server *before any HTML is rendered* (307 → `/api/agents/search`, plus a `Link` header).
+- The challenge gate (`/`) is the step-up check for ambiguous visitors or high-stakes actions such as payment.
+- The dashboard's **Flight search lanes** panel shows human vs agent traffic live.
+
+```
+.venv\Scripts\python agentslight_agent.py                     # browser agent searches, is rerouted, LLM picks a flight
+curl -L "http://127.0.0.1:8000/flights/results?from=EDI&to=KEF"   # script → straight to the JSON lane
+```
+
 ## Setup (Windows / PowerShell)
 ```
 python -m venv .venv

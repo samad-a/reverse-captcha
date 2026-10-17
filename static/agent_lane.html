@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Haarline agent lane</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/flights.css">
+</head>
+<body>
+  <section class="agent-hero">
+    <h1>⟲ Agent lane</h1>
+    <p>You were rerouted here because you look like an AI agent. Same flights, structured JSON, no UI, and none of the load on the human site.</p>
+    <ul class="why-list" id="why"></ul>
+  </section>
+  <main class="wrap">
+    <div class="summary"><h2>GET <span id="endpoint" style="font-family:'JetBrains Mono';font-size:18px"></span></h2><span class="lane-pill agent">AGENT LANE · 600 rpm</span></div>
+    <pre class="json" id="json">loading…</pre>
+    <a class="back" id="back" href="#">I'm human, take me back to the normal site →</a>
+  </main>
+  <script>
+  (async () => {
+    const qs = location.search, url = "/api/agents/search" + qs;
+    document.getElementById("endpoint").textContent = url;
+    try {
+      const r = JSON.parse(sessionStorage.getItem("rc_route") || "null");
+      if (r && r.lane === "agent" && r.reasons) document.getElementById("why").innerHTML = r.reasons.slice(0, 4).map((x) => `<li>${x.replace(/</g, "&lt;")}</li>`).join("");
+    } catch (_) {}
+    const d = await (await fetch(url)).json();
+    document.getElementById("json").textContent = JSON.stringify(d, null, 2);
+    document.getElementById("back").addEventListener("click", async (e) => {
+      e.preventDefault();
+      const p = Object.fromEntries(new URLSearchParams(qs));
+      const r = await (await fetch("/api/flights/route", { method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: p, telemetry: {}, override: "human" }) })).json();
+      location.href = r.redirect;
+    });
+  })();
+  </script>
+</body>
+</html>
