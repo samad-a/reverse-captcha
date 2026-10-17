@@ -12,10 +12,10 @@
 <body class="dash">
   <div class="bg-cards" aria-hidden="true"><span>⟲</span><span>⟳</span><span>⟲</span><span>⟳</span></div>
   <header class="dash-head">
-    <div class="logo"><span class="rev">⟲</span> REVERSE<b>CAPTCHA</b> <small>live</small></div>
+    <a class="logo" href="/" title="Back to the gate"><span class="rev">⟲</span> REVERSE<b>CAPTCHA</b> <small>live</small></a>
     <div class="head-right">
       <div class="live" id="liveText">waiting for visitors…</div>
-      <div class="ctrl"><button id="resetBtn" title="Archive all attempts (kept for training)">Reset</button></div>
+      <div class="ctrl"><span class="send hidden" id="sendAgents"><span class="send-l">Send an agent</span></span><button id="resetBtn" title="Archive all attempts (kept for training)">Reset</button></div>
     </div>
   </header>
   <div class="grid">
@@ -56,6 +56,7 @@
       <ul class="routes fade" id="routes"><li class="empty">No traffic yet. Try /sites</li></ul>
     </section>
   </div>
+  <script src="/static/agentrun.js"></script>
   <script src="/static/dashboard.js"></script>
 </body>
 </html>

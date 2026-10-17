@@ -22,3 +22,21 @@ def launch(p, headless):
         except Error:
             pass
     raise SystemExit("No browser found: run `python -m playwright install chromium` or install Edge/Chrome.")
+
+
+HOLD_OPEN_MARK = "[agent] finished: browser window left open"
+
+
+def hold(page, args):
+    """Keep the window up at the end: for --hold seconds, or with --keep-open until the person closes it."""
+    if args.headless:
+        return
+    if getattr(args, "keep_open", False):
+        print(HOLD_OPEN_MARK, flush=True)
+        try:
+            page.wait_for_event("close", timeout=0)
+        except Error:
+            pass
+        print("[agent] window closed", flush=True)
+    else:
+        page.wait_for_timeout(args.hold * 1000)

@@ -74,5 +74,11 @@
   <footer class="foot"><a href="/sites">Demo sites</a><a href="/dashboard" target="_blank">Live dashboard ↗</a></footer>
   <script src="/static/telemetry.js"></script>
   <script src="/static/gate.js"></script>
+  <script src="/static/agentrun.js"></script>
+  <script>
+    // Demo laptop only: send the real browser agent at the gate.
+    RCAgentRun.agents().then((a) => { if (a) document.querySelector(".foot").prepend(RCAgentRun.button("browser", "🤖 Send an agent", "foot-send")); });
+    RCAgentRun.decorateHub(document.querySelector("#picker .hub"));
+  </script>
 </body>
 </html>

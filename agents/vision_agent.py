@@ -10,7 +10,7 @@ import time
 sys.path.insert(0, os.path.dirname(__file__))
 from playwright.sync_api import sync_playwright  # noqa: E402
 
-from browser import launch
+from browser import hold, launch
 from llm import ask_hedged, final_answer, model_name  # noqa: E402
 from app import config  # noqa: E402
 
@@ -45,6 +45,7 @@ def main():
     ap.add_argument("--url", default="http://127.0.0.1:8000")
     ap.add_argument("--headless", action="store_true")
     ap.add_argument("--hold", type=float, default=6)
+    ap.add_argument("--keep-open", action="store_true", help="leave the window open until you close it")
     args = ap.parse_args()
 
     with sync_playwright() as p:
@@ -81,8 +82,9 @@ def main():
                 print(f"    {k:9s} {r}")
         if not args.headless:
             page.set_viewport_size({"width": 1100, "height": 860})
-            page.wait_for_timeout(args.hold * 1000)
-        browser.close()
+        hold(page, args)
+        if browser.is_connected():
+            browser.close()
 
 
 if __name__ == "__main__":

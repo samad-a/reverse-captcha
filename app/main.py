@@ -10,11 +10,20 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
-from . import challenge, classifier, config, db, features, sites
+from . import challenge, classifier, config, db, features, runner, sites
 
 STATIC = os.path.join(os.path.dirname(__file__), "..", "static")
 app = FastAPI(title="Reverse CAPTCHA")
 app.mount("/static", StaticFiles(directory=STATIC), name="static")
+
+
+@app.middleware("http")
+async def revalidate_static(req: Request, call_next):
+    """Browsers must re-check /static files (cheap 304s via ETag), so edits show up without a hard refresh."""
+    resp = await call_next(req)
+    if req.url.path.startswith("/static/"):
+        resp.headers["Cache-Control"] = "no-cache"
+    return resp
 
 
 async def _body(req):
@@ -154,6 +163,40 @@ def reset(req: Request):
     if not _trusted(req):
         raise HTTPException(403, "Reset only works from the demo machine (or with X-Admin-Key).")
     db.reset()
+    return {"ok": True}
+
+
+# ---- "Send an agent" buttons: run the real agent scripts from the page, on the demo machine only -------------
+@app.get("/api/demo/agents")
+def demo_agents(req: Request):
+    return {"enabled": _trusted(req), "agents": {k: label for k, (label, _) in runner.AGENTS.items()}}
+
+
+@app.post("/api/demo/run/{name}")
+def demo_run(name: str, req: Request):
+    if not _trusted(req):
+        raise HTTPException(403, "Agents can only be launched from the demo machine (or with X-Admin-Key).")
+    try:
+        run = runner.start(name, f"http://127.0.0.1:{req.url.port or 80}")
+    except KeyError:
+        raise HTTPException(404, "unknown agent")
+    except runner.Busy as e:
+        raise HTTPException(409, f"{runner.AGENTS[str(e)][0]} is still running.")
+    return {"ok": True, "run": run}
+
+
+@app.get("/api/demo/run")
+def demo_run_status(req: Request, since: int = 0):
+    if not _trusted(req):
+        raise HTTPException(403, "demo machine only")
+    return runner.status(since)
+
+
+@app.post("/api/demo/stop")
+def demo_stop(req: Request):
+    if not _trusted(req):
+        raise HTTPException(403, "demo machine only")
+    runner.stop()
     return {"ok": True}
 
 

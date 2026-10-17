@@ -83,6 +83,8 @@ Anyone on the wifi can use the gate and the demo sites. Only the laptop running 
 ```
 Add `--headless` to hide the browser. **Run everything in demo order with one command:** `.venv\Scripts\python agents\run_demo.py` (or pick steps: `run_demo.py gate flights jobs`). If Playwright's Chromium isn't downloaded (slow wifi), the agents fall back to the system's Edge or Chrome automatically. Force one with `AGENT_BROWSER=msedge`. `LLM_PROVIDER=stub` runs the plumbing offline (it always answers wrong).
 
+**No terminal needed:** on the demo laptop, every demo site's top bar has a **🤖 Send an agent** button, and the dashboard header has **Browser / Scraper / Vision** buttons. They run the same scripts in a visible browser (left open afterwards so you can click around the agent lane; sending the next agent closes it) and stream the output into a panel on the page. They only appear on localhost (or with `ADMIN_KEY`), and only one agent runs at a time.
+
 LLM: `agents/llm.py` wraps Nebius Token Factory (OpenAI-compatible) and Anthropic, and you switch between them in `.env`. Default text model: `openai/gpt-oss-120b` (100% accuracy, about 1s median in `ml/bench_models.py`). Vision: `Qwen/Qwen3.8-27B` (100% accuracy, about 4s median in `ml/bench_vision.py`). Agents use *hedged requests*: if the LLM has not answered after `HEDGE_AFTER_S`, they fire a duplicate request and take whichever answers first.
 
 ## Tuning

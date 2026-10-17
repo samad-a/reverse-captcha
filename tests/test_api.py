@@ -80,3 +80,35 @@ def test_booking_links_work():
 def test_results_page_reroutes_only_scripts(headers, rerouted):
     r = client.get("/flights/results?from=EDI&to=KEF", headers=headers, follow_redirects=False)
     assert (r.status_code == 307) == rerouted
+
+
+def test_agent_runner_is_guarded_and_one_at_a_time(monkeypatch):
+    from app import runner
+    assert client.get("/api/demo/agents").json()["enabled"] is False
+    assert client.post("/api/demo/run/scraper").status_code == 403
+    assert client.get("/api/demo/run").status_code == 403
+    assert client.post("/api/demo/stop").status_code == 403
+
+    monkeypatch.setattr(config, "ADMIN_KEY", "k")
+    h = {"X-Admin-Key": "k"}
+    assert client.get("/api/demo/agents", headers=h).json()["enabled"] is True
+    assert client.post("/api/demo/run/rm-rf", headers=h).status_code == 404
+    # Stand in a harmless child process for the real agent script.
+    slow = [runner.sys.executable, "-c", "import time; print('hello from the agent', flush=True); time.sleep(30)"]
+    monkeypatch.setattr(runner, "_command", lambda name, url: slow)
+    try:
+        assert client.post("/api/demo/run/scraper", headers=h).status_code == 200
+        assert client.post("/api/demo/run/tickets", headers=h).status_code == 409
+        for _ in range(50):
+            s = client.get("/api/demo/run", headers=h).json()
+            if s["lines"]:
+                break
+            runner.time.sleep(0.1)
+        assert s["running"] and s["name"] == "scraper" and s["lines"] == ["hello from the agent"]
+    finally:
+        client.post("/api/demo/stop", headers=h)
+    assert not client.get("/api/demo/run", headers=h).json()["running"]
+
+
+def test_static_files_are_revalidated():
+    assert client.get("/static/demobar.js").headers["cache-control"] == "no-cache"

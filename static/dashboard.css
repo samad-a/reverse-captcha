@@ -2,14 +2,19 @@
    Wide screens get one fixed 16:9-friendly screen (no scrolling on the projector); narrow screens stack. */
 body.dash { background: var(--red); color: #fff; --gap: clamp(14px, 1.6vw, 24px); }
 .dash-head { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px var(--gap); flex-wrap: wrap; }
-.dash-head .logo { font-size: clamp(22px, 2.6vw, 36px); text-shadow: 3px 3px 0 var(--ink); }
+.dash-head .logo { font-size: clamp(22px, 2.6vw, 36px); text-shadow: 3px 3px 0 var(--ink); color: #fff; text-decoration: none; }
 .dash-head .logo small { font: 700 .38em "JetBrains Mono"; color: var(--ink); background: var(--yellow); text-shadow: none; padding: 2px 8px; border-radius: 6px; vertical-align: middle; letter-spacing: 1px; text-transform: uppercase; }
-.head-right { display: flex; align-items: center; gap: 16px; }
-.live { font: 700 14px "JetBrains Mono"; color: #fff; }
+.head-right { display: flex; align-items: center; gap: 16px; min-width: 0; flex: 1; justify-content: flex-end; }
+.live { font: 700 14px "JetBrains Mono"; color: #fff; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .live::before { content: "●"; color: var(--yellow); margin-right: 6px; animation: blink 1s infinite; }
 @keyframes blink { 50% { opacity: .2; } }
+.ctrl { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .ctrl button { font: 400 13px "Archivo Black"; background: transparent; color: #fff; border: 3px solid #fff; border-radius: 10px; padding: 6px 12px; cursor: pointer; }
 .ctrl button:hover { background: #fff; color: var(--red); }
+.ctrl .send { display: flex; align-items: center; gap: 6px; margin-right: 6px; }
+.ctrl .send-l { font: 700 12px Inter; color: #fff; text-transform: uppercase; letter-spacing: .5px; margin-right: 2px; }
+.ctrl .agent-btn { background: var(--ink); border-color: var(--ink); }
+.ctrl .agent-btn:disabled { opacity: .5; cursor: progress; }
 
 .grid { position: relative; z-index: 1; display: grid; gap: var(--gap); padding: 0 var(--gap) var(--gap);
   grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1fr);

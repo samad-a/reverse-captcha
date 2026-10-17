@@ -91,5 +91,12 @@
     const res = await fetch("/api/reset", { method: "POST" });
     if (!res.ok) alert("Reset only works on the demo machine itself (http://localhost:8000/dashboard).");
   });
+  // Demo laptop only: launch the gate agents from the header.
+  window.RCAgentRun.agents().then((agents) => {
+    if (!agents) return;
+    const box = $("sendAgents");
+    for (const k of ["browser", "scraper", "vision"]) box.append(window.RCAgentRun.button(k, agents[k].replace(" agent", ""), "agent-btn"));
+    box.classList.remove("hidden");
+  });
   poll();
 })();

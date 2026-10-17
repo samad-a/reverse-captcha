@@ -95,6 +95,8 @@ pre.json { background: #111; color: #9ef09e; padding: 14px; border-radius: 14px;
 .foot { position: relative; z-index: 1; display: flex; justify-content: center; gap: 12px; flex-wrap: wrap; padding: 26px 16px 32px; }
 .foot a { color: #fff; font: 400 16px "Archivo Black"; text-decoration: none; padding: 10px 20px; border: 3px solid #fff; border-radius: 14px; transition: background .1s, color .1s; }
 .foot a:hover { background: #fff; color: var(--red); }
+.foot .foot-send { font: 400 16px "Archivo Black"; color: #fff; background: var(--ink); padding: 10px 20px; border: 3px solid var(--ink); border-radius: 14px; cursor: pointer; }
+.foot .foot-send:hover { background: #fff; color: var(--ink); } .foot .foot-send:disabled { opacity: .6; cursor: progress; }
 .foot .sep { display: none; }
 
 /* verdict animations on the gate */

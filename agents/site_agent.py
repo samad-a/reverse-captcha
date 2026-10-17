@@ -15,7 +15,7 @@ import time
 import httpx
 from playwright.sync_api import sync_playwright
 
-from browser import launch
+from browser import hold, launch
 from llm import ask_hedged, final_answer, model_name
 
 
@@ -145,6 +145,7 @@ def main():
     ap.add_argument("--headless", action="store_true")
     ap.add_argument("--principal", default=f"Alex Morgan #{int(time.time()) % 10000}")
     ap.add_argument("--hold", type=float, default=6)
+    ap.add_argument("--keep-open", action="store_true", help="leave the window open until you close it")
     args = ap.parse_args()
 
     with sync_playwright() as p, httpx.Client(base_url=args.url, timeout=60) as api:
@@ -161,9 +162,9 @@ def main():
         page.wait_for_function("document.getElementById('json').textContent.startsWith('{')")
         data = json.loads(page.locator("#json").text_content())
         complete_in_agent_lane(args.site, data, api, args.principal)
-        if not args.headless:
-            page.wait_for_timeout(args.hold * 1000)
-        browser.close()
+        hold(page, args)
+        if browser.is_connected():
+            browser.close()
 
 
 if __name__ == "__main__":

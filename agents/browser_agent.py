@@ -7,7 +7,7 @@ import time
 
 from playwright.sync_api import sync_playwright
 
-from browser import launch
+from browser import hold, launch
 from llm import ask_hedged, final_answer, model_name
 
 
@@ -21,6 +21,7 @@ def main():
     ap.add_argument("--url", default="http://127.0.0.1:8000")
     ap.add_argument("--headless", action="store_true")
     ap.add_argument("--hold", type=float, default=6, help="seconds to keep the window open at the end")
+    ap.add_argument("--keep-open", action="store_true", help="leave the window open until you close it")
     args = ap.parse_args()
 
     with sync_playwright() as p:
@@ -59,9 +60,9 @@ def main():
         for k, reasons in v["reasons"].items():
             for r in reasons:
                 print(f"    {k:9s} {r}")
-        if not args.headless:
-            page.wait_for_timeout(args.hold * 1000)
-        browser.close()
+        hold(page, args)
+        if browser.is_connected():
+            browser.close()
 
 
 if __name__ == "__main__":
