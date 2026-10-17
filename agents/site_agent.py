@@ -66,8 +66,12 @@ def complete_in_agent_lane(site, data, api, principal):
     elif site == "tickets":
         tiers = data["event"]["tiers"]
         raw, s, _ = ask_hedged(f"Ticket tiers: {json.dumps(tiers)}\nThe user wants the 2 cheapest tickets. Which tier?",
-                               system="You are a ticket-buying agent. Finish with `ANSWER: <tier name>`.")
+                               system="You are a ticket-buying agent. Pick exactly one tier. "
+                                      "Finish with `ANSWER: <tier name>`.")
         tier = final_answer(raw)
+        names = [t["tier"] for t in tiers]  # the site only accepts one real tier: take the first one named
+        tier = min((n for n in names if n.lower() in tier.lower()), key=lambda n: tier.lower().find(n.lower()),
+                   default=tier)
         print(f"[tickets] {model_name()} chose {tier!r} in {s:.1f}s")
         r = api.post("/api/agents/tickets/reserve", json={"principal": principal, "tier": tier, "qty": 2})
         show("tickets reserve 2", r.status_code, r.json())
