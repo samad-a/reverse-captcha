@@ -62,7 +62,8 @@ def behaviour(f):
         hit("webdriver", "navigator.webdriver = true")
     if f["total_events"] and f["untrusted_ratio"] >= R["untrusted_events"]["ratio"]:
         hit("untrusted_events", f"{f['untrusted_ratio']:.0%} of events were synthetic (isTrusted=false)")
-    if f["n_clicks"] and f["n_moves"] <= R["few_moves"]["max_moves"] and not f["touch"]:
+    # only for pointer clicks (click_offset >= 0): keyboard and screen-reader activation has no cursor path to judge
+    if f["n_clicks"] and f["click_offset"] >= 0 and f["n_moves"] <= R["few_moves"]["max_moves"] and not f["touch"]:
         hit("few_moves", f"cursor teleported ({f['n_moves']} move events before clicking)")
     if f["path_length"] > 50 and f["straightness"] >= R["straight_path"]["min_straightness"]:
         hit("straight_path", f"ruler-straight mouse path (straightness {f['straightness']:.3f})")

@@ -1,3 +1,4 @@
+import json
 import os
 import random
 import re
@@ -6,7 +7,7 @@ import time
 from urllib.parse import urlencode
 
 from fastapi import FastAPI, HTTPException, Request
-from fastapi.responses import FileResponse, RedirectResponse
+from fastapi.responses import FileResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
 from . import challenge, classifier, config, db, features, sites
@@ -14,6 +15,24 @@ from . import challenge, classifier, config, db, features, sites
 STATIC = os.path.join(os.path.dirname(__file__), "..", "static")
 app = FastAPI(title="Reverse CAPTCHA")
 app.mount("/static", StaticFiles(directory=STATIC), name="static")
+
+
+async def _body(req):
+    """JSON object body, or a 400 instead of a 500 on anything else."""
+    try:
+        body = await req.json()
+    except ValueError:
+        raise HTTPException(400, "Body must be JSON.")
+    if not isinstance(body, dict):
+        raise HTTPException(400, "Body must be a JSON object.")
+    return body
+
+
+def _trusted(req):
+    """The demo laptop itself, or anyone with the admin key. Guards reset and training labels."""
+    if config.ADMIN_KEY and secrets.compare_digest(req.headers.get("x-admin-key", ""), config.ADMIN_KEY):
+        return True
+    return bool(req.client) and req.client.host in ("127.0.0.1", "::1")
 
 
 @app.get("/")
@@ -41,8 +60,8 @@ def new_challenge():
 @app.post("/api/submit")
 async def submit(req: Request):
     received = time.monotonic()
-    body = await req.json()
-    c = challenge.take(body.get("challenge_id", ""))
+    body = await _body(req)
+    c = challenge.take(str(body.get("challenge_id", "")))
     if not c:
         raise HTTPException(404, "Unknown or already-used challenge. Request a new one.")
     elapsed = received - c["issued_at"]
@@ -54,25 +73,29 @@ async def submit(req: Request):
     f = features.compute(body.get("telemetry"))
     v = classifier.verdict(f, correct, elapsed, trap, given, c["answer"])
     v = classifier.apply_model(v, f, correct, elapsed, trap)
-    token = secrets.token_urlsafe(16) if v["passed"] else None
-    attempt_id = db.add_attempt(v, f, correct, trap, given, c["answer"],
-                                true_label=body.get("true_label"), token=token)
+    # agent tokens open the agents' entrance; for humans the same column holds the one-time Hall of Humans name token
+    token = secrets.token_urlsafe(16)
+    true_label = body.get("true_label")  # training labels only from trusted clients, so the wifi can't poison them
+    true_label = true_label if true_label in config.TRUE_LABELS and _trusted(req) else None
+    attempt_id = db.add_attempt(v, f, correct, trap, given, c["answer"], true_label=true_label, token=token)
     out = {**v, "attempt_id": attempt_id, "features": f}
-    if token:
+    if v["passed"]:
         out["agent_token"] = token
         out["agent_entrance"] = f"/api/agents/flights?token={token}"
     else:
+        out["name_token"] = token
         out["solution"] = {"answer": c["answer"], "working": c["working"], "given": given}
     return out
 
 
 @app.post("/api/name")
 async def set_name(req: Request):
-    body = await req.json()
+    body = await _body(req)
     name = str(body.get("name", "")).strip()
     if not name:
         raise HTTPException(400, "name required")
-    db.set_name(int(body.get("attempt_id", 0)), name)
+    if not db.set_name(sites._int(body.get("attempt_id"), 0), name, str(body.get("name_token", ""))):
+        raise HTTPException(403, "Only the person who made this attempt can name it, once.")
     return {"ok": True}
 
 
@@ -94,7 +117,24 @@ def agent_entrance(token: str = ""):
             "booking_endpoint": f"/api/agents/book?flight=EDI{code}{dep:02d}",
         })
     return {"welcome": "Hello, fellow machine. No CAPTCHAs, no cookie banners, no dark patterns.",
-            "schema_version": "1.0", "rate_limit_rpm": 600, "flights": flights}
+            "schema_version": "1.0", "rate_limit_rpm": 600, "booking": BOOKING_HOWTO, "flights": flights}
+
+
+BOOKING_HOWTO = {"method": "POST", "endpoint": "the flight's booking link", "requires": ["principal"],
+                 "note": "Agents hold seats on behalf of a named principal, who confirms payment themselves."}
+
+
+@app.post("/api/agents/book")
+async def agent_book(req: Request, flight: str = "", date: str = ""):
+    body = await _body(req)
+    principal = str(body.get("principal", "")).strip()[:60]
+    if not flight:
+        raise HTTPException(422, "flight is required (use the booking link from the flight list)")
+    if not principal:
+        raise HTTPException(400, "Agents must name the human principal they act for.")
+    return {"status": "held", "booking_ref": secrets.token_hex(3).upper(), "flight": flight[:20], "date": date[:20],
+            "principal": principal, "booked_by": "agent (delegated)", "hold_minutes": 15,
+            "next": "The principal confirms payment in their own account. Not part of this demo."}
 
 
 @app.get("/api/dashboard")
@@ -102,7 +142,6 @@ def dashboard_data():
     rec = db.recent(15)
     imp = None
     if os.path.exists(config.IMPORTANCES_PATH):
-        import json
         with open(config.IMPORTANCES_PATH) as fh:
             imp = json.load(fh)
     return {"latest": rec[0] if rec else None, "recent": rec, "hall": db.hall_of_humans(10), "stats": db.stats(),
@@ -111,7 +150,9 @@ def dashboard_data():
 
 
 @app.post("/api/reset")
-def reset():
+def reset(req: Request):
+    if not _trusted(req):
+        raise HTTPException(403, "Reset only works from the demo machine (or with X-Admin-Key).")
     db.reset()
     return {"ok": True}
 
@@ -148,8 +189,8 @@ def mock_flights(q):
 @app.post("/api/flights/route")
 async def route_search(req: Request):
     """Silent check when someone presses Search. No challenge: humans continue, obvious agents are rerouted."""
-    body = await req.json()
-    q = _query(body.get("query", {}))
+    body = await _body(req)
+    q = _query(body.get("query") if isinstance(body.get("query"), dict) else {})
     lane, why, robot_score, reasons, f = sites.decide_lane(body.get("telemetry"), body.get("override"))
     db.add_route(lane, why, q, robot_score, f, site="flights")
     qs = urlencode(q)
@@ -162,9 +203,11 @@ _SCRIPT_UA = re.compile(config.SCRIPT_UA_PATTERN, re.I)
 
 @app.get("/flights/results")
 def flight_results(req: Request):
-    """Human results page. Scripts that hit it directly (no browser) are rerouted before any HTML is rendered."""
+    """Human results page. Scripts that hit it directly (no browser) are rerouted before any HTML is rendered.
+    A request that asks for HTML is treated as a browser even without Sec-Fetch headers (older browsers, proxies)."""
     ua = req.headers.get("user-agent", "")
-    no_browser = not req.headers.get("sec-fetch-mode") and not req.headers.get("sec-ch-ua")
+    no_browser = (not req.headers.get("sec-fetch-mode") and not req.headers.get("sec-ch-ua")
+                  and "text/html" not in req.headers.get("accept", ""))
     q = _query(req.query_params)
     if _SCRIPT_UA.search(ua) or no_browser:
         db.add_route("agent", f"no browser ({ua[:40] or 'no user-agent'})", q, site="flights")
@@ -190,7 +233,9 @@ def agent_search(req: Request):
     return {"lane": "agent", "message": "You were rerouted to the agent lane: same inventory, structured, no UI. "
                                         "Human search capacity is unaffected.",
             "schema_version": "1.0", "rate_limit_rpm": 600, "query": q,
-            "flights": [{**fl, "book": f"/api/agents/book?flight={fl['flight']}&date={q['depart']}"} for fl in mock_flights(q)]}
+            "booking": BOOKING_HOWTO,
+            "flights": [{**fl, "book": f"/api/agents/book?{urlencode({'flight': fl['flight'], 'date': q['depart']})}"}
+                        for fl in mock_flights(q)]}
 
 
 @app.get("/api/airports")
@@ -218,8 +263,9 @@ def site_page(req: Request):
 async def route_site(site: str, req: Request):
     if site not in DEMO_SITES:
         raise HTTPException(404, "unknown site")
-    body = await req.json()
-    q = {k: str(v)[:60] for k, v in (body.get("query") or {}).items()}
+    body = await _body(req)
+    q = body.get("query") if isinstance(body.get("query"), dict) else {}
+    q = {str(k)[:30]: str(v)[:60] for k, v in q.items()}
     lane, why, robot_score, reasons, f = sites.decide_lane(body.get("telemetry"), body.get("override"))
     db.add_route(lane, why, q, robot_score, f, site=site)
     out = {"lane": lane, "reason": why, "robot_score": robot_score, "reasons": reasons}
@@ -247,8 +293,7 @@ def site_agent_api(site: str, req: Request):
 
 @app.post("/api/agents/{site}/{action}")
 async def site_agent_action(site: str, action: str, req: Request):
-    from fastapi.responses import JSONResponse
-    status, body = sites.agent_action(site, await req.json())
+    status, body = sites.agent_action(site, action, await _body(req))
     return JSONResponse(body, status_code=status)
 
 
@@ -261,7 +306,7 @@ def site_content(site: str):
 @app.post("/api/gate/check")
 async def gate_check(req: Request):
     """The checkbox: silent behaviour check. Humans get the demo-site picker; machine-like visitors get the challenge."""
-    body = await req.json()
+    body = await _body(req)
     lane, why, robot_score, reasons, f = sites.decide_lane(body.get("telemetry"))
     db.add_route(lane, why, {}, robot_score, f, site="gate")
     return {"lane": lane, "reason": why, "robot_score": robot_score, "reasons": reasons}

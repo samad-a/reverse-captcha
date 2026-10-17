@@ -14,11 +14,18 @@
     e.preventDefault();
     const query = { from: $("from").value, to: $("to").value, depart: $("depart").value, return: $("ret").value, pax: $("pax").value };
     $("overlay").classList.remove("hidden");
-    const res = await fetch("/api/flights/route", {
-      method: "POST", headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ query, telemetry: window.RCTelemetry }),
-    });
-    const r = await res.json();
+    let r;
+    try {
+      const res = await fetch("/api/flights/route", {
+        method: "POST", headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query, telemetry: window.RCTelemetry }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      r = await res.json();
+    } catch (_) { // routing check failed: fail open to the human results page
+      location.href = "/flights/results?" + new URLSearchParams(query);
+      return;
+    }
     try { sessionStorage.setItem("rc_route", JSON.stringify(r)); } catch (_) {}
     $("spin").classList.add("hidden");
     $("laneText").className = "lane " + r.lane;

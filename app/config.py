@@ -52,6 +52,9 @@ HOST = os.getenv("HOST", "0.0.0.0")
 PORT = int(os.getenv("PORT", "8000"))
 DB_PATH = os.getenv("DB_PATH", os.path.join(os.path.dirname(__file__), "..", "data.sqlite3"))
 GATE_URL = os.getenv("GATE_URL", f"http://localhost:{PORT}")
+# Reset and training labels are only accepted from this machine, or from anyone sending X-Admin-Key: <ADMIN_KEY>
+ADMIN_KEY = os.getenv("ADMIN_KEY", "")
+TRUE_LABELS = {"HUMAN", "SCRAPER", "BROWSER AGENT", "VISION AGENT"}
 
 # ---- LLM (agents) ----------------------------------------------------------
 HEDGE_AFTER_S = float(os.getenv("HEDGE_AFTER_S", "3.0"))  # text agents: fire a duplicate request if the first is slow

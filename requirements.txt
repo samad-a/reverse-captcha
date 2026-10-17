@@ -7,3 +7,4 @@ openai
 playwright
 scikit-learn
 joblib
+pytest

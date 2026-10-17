@@ -36,10 +36,10 @@ def add_route(lane, reason, query, robot_score=0, f=None, site="flights"):
 
 
 def lanes():
-    counts = {r["lane"]: r["c"] for r in _conn.execute(
-        "SELECT lane, COUNT(*) c FROM routes WHERE archived=0 GROUP BY lane").fetchall()}
-    rows = _conn.execute("SELECT id, ts, lane, reason, query, robot_score, site FROM routes WHERE archived=0 "
-                         "ORDER BY id DESC LIMIT 8").fetchall()
+    counts = {r["lane"]: r["c"] for r in _read(
+        "SELECT lane, COUNT(*) c FROM routes WHERE archived=0 GROUP BY lane")}
+    rows = _read("SELECT id, ts, lane, reason, query, robot_score, site FROM routes WHERE archived=0 "
+                 "ORDER BY id DESC LIMIT 8")
     return {"human": counts.get("human", 0), "agent": counts.get("agent", 0),
             "recent": [{**dict(r), "query": json.loads(r["query"])} for r in rows]}
 
@@ -55,15 +55,22 @@ def add_attempt(v, f, correct, trap, given, expected, true_label=None, token=Non
         return cur.lastrowid
 
 
-def set_name(attempt_id, name):
+def set_name(attempt_id, name, token):
+    """Name a failed attempt once, and only with the token its own submit returned."""
     with _lock:
-        _conn.execute("UPDATE attempts SET name=? WHERE id=? AND passed=0", (name[:24], attempt_id))
+        cur = _conn.execute("UPDATE attempts SET name=? WHERE id=? AND passed=0 AND token=? AND (name IS NULL OR name='')",
+                            (name[:24], attempt_id, token))
         _conn.commit()
+        return cur.rowcount == 1
+
+
+def _read(sql, args=()):
+    with _lock:  # one shared connection: keep reads off it while another thread writes
+        return _conn.execute(sql, args).fetchall()
 
 
 def token_valid(token):
-    row = _conn.execute("SELECT id FROM attempts WHERE token=? AND passed=1", (token,)).fetchone()
-    return row is not None
+    return bool(token) and bool(_read("SELECT id FROM attempts WHERE token=? AND passed=1", (token,)))
 
 
 def _row(r):
@@ -74,21 +81,21 @@ def _row(r):
 
 
 def recent(n=12):
-    rows = _conn.execute("SELECT * FROM attempts WHERE archived=0 ORDER BY id DESC LIMIT ?", (n,)).fetchall()
+    rows = _read("SELECT * FROM attempts WHERE archived=0 ORDER BY id DESC LIMIT ?", (n,))
     return [_row(r) for r in rows]
 
 
 def hall_of_humans(n=10):
     """People who failed, best first: correct-but-slow by time, then closest wrong answers."""
-    rows = _conn.execute(
+    rows = _read(
         "SELECT * FROM attempts WHERE archived=0 AND passed=0 AND name IS NOT NULL AND name != '' "
         "ORDER BY correct DESC, CASE WHEN given IS NULL THEN 1e12 ELSE abs(given-expected) END ASC, elapsed ASC LIMIT ?",
-        (n,)).fetchall()
+        (n,))
     return [_row(r) for r in rows]
 
 
 def stats():
-    rows = _conn.execute("SELECT label, COUNT(*) c FROM attempts WHERE archived=0 GROUP BY label").fetchall()
+    rows = _read("SELECT label, COUNT(*) c FROM attempts WHERE archived=0 GROUP BY label")
     return {r["label"]: r["c"] for r in rows}
 
 
@@ -101,4 +108,4 @@ def reset():
 
 
 def training_rows():
-    return [dict(r) for r in _conn.execute("SELECT * FROM attempts").fetchall()]
+    return [dict(r) for r in _read("SELECT * FROM attempts")]

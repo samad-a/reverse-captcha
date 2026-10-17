@@ -24,10 +24,16 @@ def _segments_before_clicks(moves, clicks):
 
 
 def compute(tel):
-    tel = tel or {}
-    moves = [m for m in tel.get("moves", []) if isinstance(m, (list, tuple)) and len(m) >= 3]
-    clicks = [c for c in tel.get("clicks", []) if isinstance(c, dict) and "t" in c]
-    keys = tel.get("keys", [])
+    tel = tel if isinstance(tel, dict) else {}  # telemetry is client-supplied: drop anything malformed
+    isnum = lambda x: isinstance(x, (int, float)) and not isinstance(x, bool) and math.isfinite(x)
+    lst = lambda k: tel.get(k) if isinstance(tel.get(k), list) else []
+    moves = [m for m in lst("moves") if isinstance(m, (list, tuple)) and len(m) >= 3 and all(map(isnum, m[:3]))]
+    clicks = [c for c in lst("clicks") if isinstance(c, dict) and isnum(c.get("t"))]
+    for c in clicks:
+        rel = c.get("rel")
+        if not (isinstance(rel, dict) and all(isnum(rel.get(k)) for k in ("dx", "dy", "w", "h"))):
+            c.pop("rel", None)
+    keys = [k for k in lst("keys") if isinstance(k, dict) and isnum(k.get("t"))]
 
     path = 0.0
     speeds, angles = [], []
@@ -74,9 +80,9 @@ def compute(tel):
     speed_mean = st.mean(speeds) if speeds else 0.0
     speed_cv = (st.pstdev(speeds) / speed_mean) if len(speeds) >= 2 and speed_mean > 0 else 0.0
 
-    total = int(tel.get("events_total", 0) or 0)
-    untrusted = int(tel.get("untrusted_total", 0) or 0)
-    fi = tel.get("first_interaction_ms")
+    count = lambda k: max(0, int(tel[k])) if isnum(tel.get(k)) else 0
+    total, untrusted = count("events_total"), count("untrusted_total")
+    fi = tel.get("first_interaction_ms") if isnum(tel.get("first_interaction_ms")) else None
 
     return {
         "n_moves": len(moves),
@@ -92,9 +98,9 @@ def compute(tel):
         "first_interaction_ms": float(fi) if fi is not None else -1.0,
         "n_keys": len(downs),
         "key_interval_std": round(key_std, 2),
-        "pasted": int(tel.get("pastes", 0) or 0),
-        "n_scrolls": int(tel.get("scrolls", 0) or 0),
-        "untrusted_ratio": round(untrusted / total, 3) if total else 0.0,
+        "pasted": count("pastes"),
+        "n_scrolls": count("scrolls"),
+        "untrusted_ratio": round(min(untrusted, total) / total, 3) if total else 0.0,
         "webdriver": 1 if tel.get("webdriver") else 0,
         "touch": 1 if tel.get("touch") else 0,
         "total_events": total,

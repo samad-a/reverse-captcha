@@ -79,7 +79,8 @@
   }
   $("resetBtn").addEventListener("click", async () => {
     if (!confirm("Archive all attempts? (They're kept for training.)")) return;
-    await fetch("/api/reset", { method: "POST" });
+    const res = await fetch("/api/reset", { method: "POST" });
+    if (!res.ok) alert("Reset only works on the demo machine itself (http://localhost:8000/dashboard).");
   });
   poll();
 })();

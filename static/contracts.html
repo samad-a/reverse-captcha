@@ -53,8 +53,9 @@
       document.getElementById("signForm").classList.add("hidden");
       const d = document.getElementById("done");
       d.classList.remove("hidden");
-      d.innerHTML = `<h3 style="margin-top:0">✅ Signed by ${s.signed_by}: human signature</h3>
-        <p>Recorded in the audit trail with evidence that a person reviewed it:</p><pre>${JSON.stringify(s, null, 2)}</pre>`;
+      d.innerHTML = `<h3 style="margin-top:0"></h3><p>Recorded in the audit trail with evidence that a person reviewed it:</p><pre></pre>`;
+      d.querySelector("h3").textContent = `✅ Signed by ${s.signed_by}: human signature`;
+      d.querySelector("pre").textContent = JSON.stringify(s, null, 2);
     });
   })();
   </script>

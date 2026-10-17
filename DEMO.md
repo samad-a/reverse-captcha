@@ -2,7 +2,7 @@
 
 ## Before you go on stage
 1. `.venv\Scripts\python run.py` (one terminal; leave it running).
-2. Projector: http://localhost:8000/dashboard?demo=1. Press **Reset** so the feed is clean (old attempts stay as training data).
+2. Projector: http://localhost:8000/dashboard?demo=1. Press **Reset** so the feed is clean (old attempts stay as training data). Reset only works from the laptop running the server, so the audience can't wipe the feed.
 3. Laptop tabs: http://localhost:8000/ (gate) and http://localhost:8000/flights (flight site) for the judges. Optionally put `http://<laptop-ip>:8000/` on a slide for phones.
 4. Second terminal, ready with `.venv\Scripts\python agents\browser_agent.py` typed in.
 5. Sanity run: `.venv\Scripts\python agents\scraper_agent.py`, then Reset again.

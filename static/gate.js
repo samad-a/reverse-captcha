@@ -14,9 +14,19 @@
     box.disabled = true;
     box.className = "tick spin";
     $("checkStatus").textContent = "Analysing how you move…";
-    const r = await (await fetch("/api/gate/check", {
-      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ telemetry: tel }),
-    })).json();
+    let r;
+    try {
+      const res = await fetch("/api/gate/check", {
+        method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ telemetry: tel }),
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      r = await res.json();
+    } catch (_) {
+      box.disabled = false;
+      box.className = "tick";
+      $("checkStatus").textContent = "Couldn't reach the gate. Tick the box again.";
+      return;
+    }
     await new Promise((ok) => setTimeout(ok, 500));
     if (r.lane === "agent") {
       box.className = "tick ok";
@@ -110,7 +120,7 @@
         e.preventDefault();
         const name = $("nameInput").value.trim();
         if (!name) return;
-        await fetch("/api/name", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ attempt_id: v.attempt_id, name }) });
+        await fetch("/api/name", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ attempt_id: v.attempt_id, name, name_token: v.name_token }) });
         $("nameForm").innerHTML = `<p class="lede">🏛️ <b>${esc(name)}</b> has been added to the Hall of Humans. Congratulations on being made of meat.</p>`;
       });
     } else {

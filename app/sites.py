@@ -125,16 +125,27 @@ def agent_payload(site, q):
 
 # simple in-memory quotas for the demo
 _ticket_quota, _shop_quota = {}, {}
+ACTIONS = {"contracts": "sign", "tickets": "reserve", "shop": "order"}
 
 
-def agent_action(site, body):
+def _int(x, default=None):
+    try:
+        return int(x)
+    except (TypeError, ValueError):
+        return default
+
+
+def agent_action(site, action, body):
+    if ACTIONS.get(site) != action:
+        return 404, {"error": f"Unknown action. Agent actions: {', '.join(f'POST /api/agents/{s}/{a}' for s, a in ACTIONS.items())}"}
     principal = str(body.get("principal", "")).strip()[:60]
     if not principal:
         return 400, {"error": "Agents must name the human principal they act for."}
     if site == "contracts":
         if body.get("contract_hash") != contract_hash():
             return 409, {"error": "Contract hash mismatch: re-read the contract before signing."}
-        flags_ack = set(map(int, body.get("acknowledged_flags", [])))
+        acked = body.get("acknowledged_flags", [])
+        flags_ack = {_int(n) for n in acked} if isinstance(acked, list) else set()
         missing = [fl["clause"] for fl in CONTRACT_FLAGS if fl["clause"] not in flags_ack]
         if missing:
             return 422, {"error": f"Acknowledge flagged clauses first: {missing}"}
@@ -143,12 +154,18 @@ def agent_action(site, body):
                      "signature_type": "agent (delegated)", "contract": CONTRACT["id"],
                      "next": "Principal must countersign clause 7 (high risk)" if status != "signed" else None}
     if site == "tickets":
-        qty = int(body.get("qty", 1))
+        qty = _int(body.get("qty", 1))
+        if qty is None or qty < 1:
+            return 422, {"error": "qty must be a whole number of at least 1."}
+        tier = next((t["tier"] for t in EVENT["tiers"]
+                     if t["tier"].lower() == str(body.get("tier", "")).strip(" .\"'").lower()), None)
+        if not tier:
+            return 422, {"error": "Unknown tier", "tiers": [t["tier"] for t in EVENT["tiers"]]}
         used = _ticket_quota.get(principal, 0)
         if used + qty > AGENT_TICKET_POLICY["max_tickets_per_principal"]:
             return 429, {"error": f"Agent quota: max {AGENT_TICKET_POLICY['max_tickets_per_principal']} tickets per principal ({used} used)."}
         _ticket_quota[principal] = used + qty
-        return 200, {"status": "reserved", "tier": body.get("tier"), "qty": qty, "named_to": principal,
+        return 200, {"status": "reserved", "tier": tier, "qty": qty, "named_to": principal,
                      "transferable": False, "hold_minutes": 10}
     if site == "shop":
         if _shop_quota.get(principal):
