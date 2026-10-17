@@ -29,7 +29,7 @@ On a real site you wouldn't show humans a challenge at all. `/flights` is a mock
 - The dashboard's **Flight search lanes** panel shows human vs agent traffic live.
 
 ```
-.venv\Scripts\python agentslight_agent.py                     # browser agent searches, is rerouted, LLM picks a flight
+.venv\Scripts\python agents\flight_agent.py                     # browser agent searches, is rerouted, LLM picks a flight
 curl -L "http://127.0.0.1:8000/flights/results?from=EDI&to=KEF"   # script → straight to the JSON lane
 ```
 

@@ -32,7 +32,7 @@
 ## 4b. The real-world version: invisible rerouting on a flight site (`/flights`)
 - "Nobody wants a CAPTCHA when booking a holiday. So on a real site it's invisible."
 - Search as a human at http://localhost:8000/flights → normal results. No challenge.
-- Run `.venv\Scripts\python agentslight_agent.py` → same page, same button. It gets **"Agent detected → agent lane"** and lands on `/agents/search` with its search intact. gpt-oss then picks the cheapest direct flight from the JSON.
+- Run `.venv\Scripts\python agents\flight_agent.py` → same page, same button. It gets **"Agent detected → agent lane"** and lands on `/agents/search` with its search intact. gpt-oss then picks the cheapest direct flight from the JSON.
 - Run `curl -L "http://127.0.0.1:8000/flights/results?from=EDI&to=KEF"` → a script is rerouted before any HTML is rendered.
 - Point at the **Flight search lanes** panel: "Agent traffic is on its own lane, so it never slows down real travellers. The gate you saw earlier becomes the step-up check for unclear cases."
 
