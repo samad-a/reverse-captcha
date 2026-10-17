@@ -10,7 +10,7 @@ import time
 
 import httpx
 
-from llm import ask, model_name
+from llm import ask, final_answer, model_name
 
 
 def html_to_text(s):
@@ -28,7 +28,8 @@ def main():
         c = http.post("/api/challenge").json()
         print(f"[scraper] got challenge ({c['word_count']} words): {c['question']}")
         doc = html_to_text(c["document_html"])
-        answer, llm_s = ask(f"DOCUMENT:\n{doc}\n\nQUESTION: {c['question']}")
+        raw, llm_s = ask(f"DOCUMENT:\n{doc}\n\nQUESTION: {c['question']}")
+        answer = final_answer(raw)
         print(f"[scraper] {model_name()} answered {answer!r} in {llm_s:.1f}s")
         v = http.post("/api/submit", json={"challenge_id": c["challenge_id"], "answer": answer,
                                            "true_label": "SCRAPER"}).json()

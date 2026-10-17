@@ -95,7 +95,7 @@ def generate(seed=None):
     fare = r.choice(FARE_NAMES[:3] if qtype != "bags" else FARE_NAMES)
     f = fares[fare]
     # only ask refund questions whose answer is a positive amount (0 would be guessable)
-    tiers = [t for t in range(4) if f["price"] * f["pcts"][t] / 100 - f["admin"] > 0]
+    tiers = [t for t in range(4) if f["price"] * f["pcts"][t] / 100 - f["admin"] >= 10]
     if qtype == "change" and f["change"] == 0:
         qtype = "bags"
     if qtype == "refund" and not tiers:

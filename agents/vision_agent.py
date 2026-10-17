@@ -7,7 +7,7 @@ import time
 
 from playwright.sync_api import sync_playwright
 
-from llm import ask, model_name
+from llm import ask, final_answer, model_name
 
 TILE_H = 900
 
@@ -44,8 +44,9 @@ def main():
             y += h
         print(f"[vision] captured {len(tiles)} screenshot tiles")
 
-        answer, llm_s = ask("These screenshots show a web page: a question at the top, then an airline fare-rules "
-                            "document. Answer the question shown.", image_png=tiles, max_tokens=80)
+        raw, llm_s = ask("These screenshots show a web page: a question at the top, then an airline fare-rules "
+                         "document. Answer the question shown.", image_png=tiles)
+        answer = final_answer(raw)
         print(f"[vision] {model_name(vision=True)} answered {answer!r} in {llm_s:.1f}s")
 
         a = page.locator("#answer").bounding_box()

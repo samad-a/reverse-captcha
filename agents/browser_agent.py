@@ -7,7 +7,7 @@ import time
 
 from playwright.sync_api import sync_playwright
 
-from llm import ask, model_name
+from llm import ask, final_answer, model_name
 
 
 def centre(page, selector):
@@ -37,7 +37,8 @@ def main():
         doc = page.locator("#doc").text_content()  # includes visually hidden nodes
         print(f"[browser] read {len(doc.split())} words from the DOM. Q: {question}")
 
-        answer, llm_s = ask(f"DOCUMENT:\n{doc}\n\nQUESTION: {question}")
+        raw, llm_s = ask(f"DOCUMENT:\n{doc}\n\nQUESTION: {question}")
+        answer = final_answer(raw)
         print(f"[browser] {model_name()} answered {answer!r} in {llm_s:.1f}s")
 
         x, y = centre(page, "#answer")
