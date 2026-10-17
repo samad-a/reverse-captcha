@@ -28,7 +28,10 @@ def fit_viewport(headless, width=1280, height=860):
 
 def launch(p, headless):
     forced = os.getenv("AGENT_BROWSER")
-    extra = {} if headless else {"args": ["--window-position=0,0"]}
+    # Visible windows start top-left, sized to fit above the taskbar; pages then follow the real window (see new_page).
+    fit = fit_viewport(headless)
+    extra = {} if headless else {"args": ["--window-position=0,0",
+                                          f"--window-size={fit['width'] + CHROME_W},{fit['height'] + CHROME_H}"]}
     if forced:
         return p.chromium.launch(headless=headless, channel=forced, **extra)
     try:
@@ -45,6 +48,13 @@ def launch(p, headless):
             pass
     raise SystemExit("No browser found: run `python -m playwright install chromium` or install Edge/Chrome.")
 
+
+
+def new_page(browser, headless):
+    """Headless: a fixed 1280x860 page. Visible: the page is the real window, so resizing or maximising it works."""
+    if headless:
+        return browser.new_page(viewport=fit_viewport(True))
+    return browser.new_page(no_viewport=True)
 
 HOLD_OPEN_MARK = "[agent] finished: browser window left open"
 

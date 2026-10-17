@@ -7,7 +7,7 @@ import time
 
 from playwright.sync_api import sync_playwright
 
-from browser import fit_viewport, hold, launch
+from browser import hold, launch, new_page
 from llm import ask_hedged, final_answer, model_name
 
 
@@ -26,7 +26,7 @@ def main():
 
     with sync_playwright() as p:
         browser = launch(p, args.headless)
-        page = browser.new_page(viewport=fit_viewport(args.headless))
+        page = new_page(browser, args.headless)
         page.goto(args.url + "/?label=BROWSER%20AGENT")
         t0 = time.perf_counter()
 
