@@ -25,12 +25,27 @@
       <p class="lede">For twenty years websites made machines click on traffic lights. We flipped it.
         This gate lets AI agents in and keeps humans out. It also works out <b>what kind</b> of visitor you are.</p>
       <div class="captcha-box">
-        <div class="tick" id="tickbox"></div>
-        <div class="captcha-label">I am <b>not</b> a human</div>
+        <button class="tick" id="tickbox" aria-label="I am not a human"></button>
+        <label class="captcha-label" for="tickbox">I am <b>not</b> a human</label>
         <div class="captcha-logo"><span>⟲</span><small>reCAPTCHA<br>but backwards</small></div>
       </div>
-      <button id="enterBtn" class="big-btn">Enter <span>→</span></button>
-      <p class="fine">By entering you agree to be judged by a machine. Telemetry: mouse, keys, timing. Nothing leaves this room.</p>
+      <p class="check-status" id="checkStatus">Tick the box. We'll take it from there.</p>
+      <p class="fine">By ticking you agree to be judged by a machine. Telemetry: mouse, keys, timing. Nothing leaves this room.</p>
+    </section>
+
+    <!-- STEP 1b: humans get the demo-site picker instead of a wall of text -->
+    <section id="picker" class="card hidden">
+      <div class="stamp denied">ACCESS DENIED</div>
+      <h1 style="margin-top:14px">Suspiciously human.</h1>
+      <p class="lede" id="pickerWhy"></p>
+      <p class="lede"><b>Consolation prize:</b> see how real sites would treat you vs an AI agent. You'll get the normal site, and agents get rerouted to their own lane.</p>
+      <div class="hub">
+        <a href="/flights"><div class="ico">✈️</div><b>Flight search</b><p>Agents get fares as JSON, so bot searches don't slow real travellers.</p></a>
+        <a href="/contracts"><div class="ico">✍️</div><b>Contract signing</b><p>Agents sign <i>on behalf of</i> a named person. Risky clauses need a human.</p></a>
+        <a href="/tickets"><div class="ico">🎟️</div><b>Event tickets</b><p>A separate agent queue with a 2-ticket quota, so scalper bots can't crowd out fans.</p></a>
+        <a href="/shop"><div class="ico">👟</div><b>Limited drop</b><p>Product feed for agents, with 1 pair per real customer.</p></a>
+      </div>
+      <p style="margin-top:22px"><button id="tryChallenge" class="big-btn small yellow">Think you can pass as a machine? Try the 6-second test ⟲</button></p>
     </section>
 
     <!-- STEP 2: challenge (filled by JS only after Enter) -->

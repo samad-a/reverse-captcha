@@ -54,7 +54,10 @@ def main():
         page.add_style_tag(content=".doc{max-height:none!important}")
         t0 = time.perf_counter()
 
-        click_centre(page, "#enterBtn")
+        click_centre(page, "#tickbox")
+        page.wait_for_selector("#doc .clause, #picker:not(.hidden)")
+        if page.locator("#picker:not(.hidden)").count():  # judged human by the checkbox: take the dare
+            click_centre(page, "#tryChallenge")
         page.wait_for_selector("#doc .clause")
         page.wait_for_timeout(100)
         tiles = capture_tiles(page)

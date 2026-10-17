@@ -37,7 +37,15 @@ h1 em { font-style: normal; color: var(--blue); display: inline-block; transform
 
 .captcha-box { display: flex; align-items: center; gap: 16px; max-width: 420px; padding: 16px 18px; margin: 26px 0; background: #f9f9f9; border: 2px solid #d3d3d3; border-radius: 6px; box-shadow: 0 1px 3px #0002; transform: scaleX(-1); }
 .captcha-box > * { transform: scaleX(-1); }
-.tick { width: 30px; height: 30px; border: 2px solid #c1c1c1; border-radius: 3px; background: #fff; flex: none; }
+.tick { width: 32px; height: 32px; border: 2px solid #c1c1c1; border-radius: 3px; background: #fff; flex: none; cursor: pointer; padding: 0; font: 700 22px Inter; line-height: 28px; text-align: center; transition: border-color .15s; }
+.tick:hover { border-color: #888; }
+.tick:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+.tick.spin { border-radius: 50%; border: 4px solid #d6e4ff; border-top-color: var(--blue); animation: spin360 .7s linear infinite; cursor: default; }
+@keyframes spin360 { to { transform: rotate(360deg); } }
+.tick.ok { border-color: var(--green); color: var(--green); } .tick.ok::after { content: "✓"; }
+.tick.no { border-color: var(--red); color: var(--red); } .tick.no::after { content: "✗"; }
+.captcha-label { cursor: pointer; }
+.check-status { font-weight: 600; min-height: 1.4em; margin: -10px 0 18px; }
 .captcha-label { font-size: 16px; flex: 1; }
 .captcha-logo { text-align: center; color: #555; font-size: 10px; line-height: 1.1; }
 .captcha-logo span { display: block; font-size: 28px; color: var(--blue); }
@@ -93,3 +101,10 @@ pre.json { background: #111; color: #9ef09e; padding: 14px; border-radius: 14px;
   .corner { font-size: 40px; }
   .doc { max-height: 45vh; }
 }
+
+/* demo-site picker cards (gate + /sites hub) */
+.hub { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; margin-top: 22px; }
+.hub a { display: block; text-decoration: none; color: var(--ink); background: #fff; border: 4px solid var(--ink); border-radius: 20px; padding: 20px; box-shadow: 6px 6px 0 var(--ink); transition: transform .1s, box-shadow .1s; }
+.hub a:hover { transform: translate(-2px, -2px); box-shadow: 8px 8px 0 var(--ink); }
+.hub .ico { font-size: 44px; } .hub b { display: block; font: 400 22px "Archivo Black"; margin: 6px 0; }
+.hub p { margin: 0; color: var(--muted); font-size: 15px; } .hub code { font-size: 12px; }

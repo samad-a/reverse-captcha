@@ -6,19 +6,48 @@
   let challengeId = null, timerRAF = null;
   const params = new URLSearchParams(location.search);
 
-  $("enterBtn").addEventListener("click", async () => {
-    $("enterBtn").disabled = true;
-    $("tickbox").textContent = "⟳";
+  // The checkbox: a silent behaviour check. Machine-like visitors are asked to prove it with the challenge;
+  // humans skip the wall of text and get the demo-site picker (the challenge stays available as a dare).
+  $("tickbox").addEventListener("click", async () => {
+    const box = $("tickbox");
+    if (box.disabled) return;
+    box.disabled = true;
+    box.className = "tick spin";
+    $("checkStatus").textContent = "Analysing how you move…";
+    const r = await (await fetch("/api/gate/check", {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ telemetry: tel }),
+    })).json();
+    await new Promise((ok) => setTimeout(ok, 500));
+    if (r.lane === "agent") {
+      box.className = "tick ok";
+      $("checkStatus").innerHTML = `<b>Machine-like visitor detected</b> (${esc(r.reason)}). Prove it…`;
+      setTimeout(startChallenge, 700);
+    } else {
+      box.className = "tick no";
+      $("checkStatus").innerHTML = "<b>Hmm. That felt human.</b>";
+      setTimeout(() => {
+        $("pickerWhy").textContent = r.reasons.length ? `Detected: ${r.reasons.slice(0, 3).join(", ")}.` : "Detected: general carbon-based vibes.";
+        $("landing").classList.add("hidden");
+        $("picker").classList.remove("hidden");
+        scrollTo(0, 0);
+      }, 700);
+    }
+  });
+  $("tryChallenge").addEventListener("click", startChallenge);
+
+  async function startChallenge() {
     const res = await fetch("/api/challenge", { method: "POST" });
     const c = await res.json();
     challengeId = c.challenge_id;
     $("question").textContent = c.question;
     $("doc").innerHTML = c.document_html;
     $("landing").classList.add("hidden");
+    $("picker").classList.add("hidden");
     $("challenge").classList.remove("hidden");
+    scrollTo(0, 0);
     $("answer").focus({ preventScroll: true });
     startTimer(c.time_limit_s);
-  });
+  }
 
   function startTimer(limit) {
     const start = performance.now();

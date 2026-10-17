@@ -29,9 +29,14 @@ def main():
         t0 = time.perf_counter()
 
         # robot-style: straight line, dead centre, no hesitation
-        x, y = centre(page, "#enterBtn")
+        x, y = centre(page, "#tickbox")
         page.mouse.move(x, y, steps=4)
         page.mouse.click(x, y)
+        page.wait_for_selector("#doc .clause, #picker:not(.hidden)")
+        if page.locator("#picker:not(.hidden)").count():  # judged human by the checkbox: take the dare
+            x, y = centre(page, "#tryChallenge")
+            page.mouse.move(x, y, steps=4)
+            page.mouse.click(x, y)
         page.wait_for_selector("#doc .clause")
         question = page.locator("#question").text_content()
         doc = page.locator("#doc").text_content()  # includes visually hidden nodes

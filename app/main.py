@@ -256,3 +256,12 @@ async def site_agent_action(site: str, action: str, req: Request):
 def site_content(site: str):
     """Public content the human pages render (contract text, event, product)."""
     return {"contracts": sites.CONTRACT, "tickets": sites.EVENT, "shop": sites.PRODUCT}.get(site) or {}
+
+
+@app.post("/api/gate/check")
+async def gate_check(req: Request):
+    """The checkbox: silent behaviour check. Humans get the demo-site picker; machine-like visitors get the challenge."""
+    body = await req.json()
+    lane, why, robot_score, reasons, f = sites.decide_lane(body.get("telemetry"))
+    db.add_route(lane, why, {}, robot_score, f, site="gate")
+    return {"lane": lane, "reason": why, "robot_score": robot_score, "reasons": reasons}

@@ -13,10 +13,10 @@
   };
   const ago = (ts) => { const s = Math.round(Date.now() / 1000 - ts); return s < 60 ? `${s}s ago` : `${Math.round(s / 60)}m ago`; };
 
-  const SITE_ICON = { flights: "✈️", contracts: "✍️", tickets: "🎟️", shop: "👟" };
+  const SITE_ICON = { gate: "⟲", flights: "✈️", contracts: "✍️", tickets: "🎟️", shop: "👟" };
   const siteLabel = (r) => {
     const q = r.query || {}, s = r.site || "flights";
-    const what = s === "flights" ? `${q.from} → ${q.to}` : s === "contracts" ? "sign contract" : s === "tickets" ? `${q.qty || ""}× ${q.tier || "tickets"}` : `size ${q.size || "?"}`;
+    const what = s === "gate" ? "gate checkbox" : s === "flights" ? `${q.from} → ${q.to}` : s === "contracts" ? "sign contract" : s === "tickets" ? `${q.qty || ""}× ${q.tier || "tickets"}` : `size ${q.size || "?"}`;
     return `${SITE_ICON[s] || ""} ${esc(what)}`;
   };
 
