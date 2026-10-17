@@ -12,13 +12,15 @@
 > "For twenty years, websites have made machines prove they're human. But the visitors are changing. AI agents now book flights and sign contracts for us, and they're forced to squeeze through a UI built for eyeballs. So we flipped the script: **Reverse CAPTCHA**. It lets agents in, keeps humans out, and tells you *which kind* of agent just arrived."
 
 ## 1. A judge tries normally → HUMAN (blocked)
-- Hand over the laptop: "Prove you're not human. Click Enter."
-- They get ~1,900 words of airline fare rules and a refund question, with a 6-second bar.
-- Result: **ACCESS DENIED: suspiciously human**, plus the reasons (curved path, hesitation, reading time, wrong answer). Get them to type their name → it appears in the **Hall of Humans** on the projector.
+- Hand over the laptop: "Prove you're not human. Just tick the box."
+- The checkbox silently checks how they moved. Result: **ACCESS DENIED: suspiciously human**, with the reasons (curved path, hesitation, sloppy click). No wall of text.
+- The consolation prize is a picker for the four demo sites (flights, contracts, tickets, shop). Let them click one and use it normally. They're never challenged.
 
 ## 2. A judge tries to "act like a bot" → still HUMAN
-- "Okay, move in straight lines and click dead centre."
-- They may get some robotic tells, but **they can't read 1,900 words and compute a refund in 6 seconds.** The challenge is the real wall; behaviour only decides *which* machine you are.
+- Press **"Think you can pass as a machine? Try the 6-second test"** on the picker.
+- They get ~1,900 words of airline fare rules and a refund question, with a 6-second bar. **No human can read that and compute a refund in 6 seconds.** The challenge is the real wall; behaviour only decides *which* machine you are.
+- Get them to type their name → it appears in the **Hall of Humans** on the projector.
+- (Agents never see the picker: when the checkbox flags machine-like behaviour, the visitor goes straight to the challenge, which also works out *which kind* of agent it is.)
 
 ## 3. `browser_agent.py` → BROWSER AGENT (about 2s)
 - Run it. A Chromium window opens, the cursor teleports, the answer goes in, and it gets through in about 2 seconds.
