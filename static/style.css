@@ -117,7 +117,8 @@ pre.json { background: #111; color: #9ef09e; padding: 14px; border-radius: 14px;
 .hub { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px; margin-top: 22px; }
 .hub a { display: block; text-decoration: none; color: var(--ink); background: #fff; border: 4px solid var(--ink); border-radius: 20px; padding: 20px; box-shadow: 6px 6px 0 var(--ink); transition: transform .1s, box-shadow .1s; }
 .hub a:hover { transform: translate(-2px, -2px); box-shadow: 8px 8px 0 var(--ink); }
-.hub .ico { font-size: 44px; }
+.picker-h { margin-top: 14px; }
+.hub-h { font-size: clamp(28px, 5vw, 48px); margin-top: 0; }
 .hub .mark { height: 64px; border-radius: 12px; border: 2px solid var(--ink); display: flex; align-items: center; justify-content: center; gap: 4px; margin-bottom: 10px; font-size: 24px; line-height: 1; white-space: nowrap; overflow: hidden; }
 .mark.haar { background: #ffcc00; color: #0a1f44; font: italic 800 30px "Barlow Condensed", sans-serif; }
 .mark.ink { background: #fff; color: #1c1c22; font: 600 24px "IBM Plex Sans", sans-serif; }
@@ -132,3 +133,38 @@ pre.json { background: #111; color: #9ef09e; padding: 14px; border-radius: 14px;
 .mark.gate { background: var(--red); color: #fff; font: 400 36px "Archivo Black", sans-serif; }
 .hub b { display: block; font: 400 22px "Archivo Black"; margin: 6px 0; }
 .hub p { margin: 0; color: var(--muted); font-size: 15px; } .hub code { font-size: 12px; }
+
+/* agent lane (/agents/<site>) */
+.lane-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; position: relative; z-index: 1; max-width: 980px; margin: 0 auto; padding: 22px 16px 6px; color: #fff; }
+.lane-head .logo { font-size: clamp(22px, 3.4vw, 34px); }
+.lane-head .logo small { font: 700 .45em "JetBrains Mono"; color: #fff; text-shadow: none; margin-left: 6px; letter-spacing: 0; }
+main.lane { max-width: 980px; display: grid; gap: 22px; }
+main.lane > * { min-width: 0; }
+a.big-btn { text-decoration: none; display: inline-block; }
+.site-chip { display: inline-block; font: 700 13px "JetBrains Mono"; background: var(--ink); color: var(--yellow); padding: 5px 12px; border-radius: 999px; }
+.lane h1 { margin: 14px 0 10px; font-size: clamp(30px, 5vw, 54px); }
+.lane h2 { font: 400 22px "Archivo Black"; margin: 0 0 12px; }
+.why-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; padding: 0; list-style: none; }
+.why-chips li { font: 600 14px Inter; background: #fff; border: 2px solid var(--ink); border-radius: 999px; padding: 5px 12px; }
+.why-chips li::before { content: "⚑ "; color: var(--red); }
+.rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+.rule { background: #fff; border: 3px solid var(--ink); border-radius: 16px; padding: 12px 14px; box-shadow: 4px 4px 0 var(--ink); }
+.rule b { display: block; font: 400 30px/1.1 "Archivo Black"; color: var(--blue); }
+.rule span { font-weight: 600; font-size: 14px; }
+.endpoint { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 18px; font: 700 15px "JetBrains Mono"; }
+.verb { background: var(--green); color: #fff; padding: 3px 10px; border-radius: 8px; }
+.verb.get { background: var(--blue); }
+.req { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+.req code { font: 600 13px "JetBrains Mono"; background: #fff3b0; border: 2px solid var(--ink); border-radius: 8px; padding: 2px 8px; }
+details.json-wrap { margin-top: 18px; }
+details.json-wrap summary { cursor: pointer; font: 400 18px "Archivo Black"; list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+details.json-wrap summary::before { content: "▸"; margin-right: 6px; transition: transform .15s; display: inline-block; }
+details[open].json-wrap summary::before { transform: rotate(90deg); }
+details.json-wrap summary span { flex: 1; }
+.copy { font: 700 13px Inter; background: #fff; border: 2px solid var(--ink); border-radius: 10px; padding: 6px 12px; cursor: pointer; }
+.copy:hover { background: var(--yellow); }
+.lane pre.json { max-height: 56vh; margin: 10px 0 0; font-size: 13px; color: #e6e6e6; background: #15161c; }
+.lane pre.json .k { color: #7fc8ff; } .lane pre.json .s { color: #b6f09c; } .lane pre.json .n { color: #ffcf6b; } .lane pre.json .b { color: #ff8fb1; }
+.human-out { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.human-out p { margin: 0; font-weight: 600; max-width: 520px; }
+#endpoint { font: 15px "JetBrains Mono"; }

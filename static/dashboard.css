@@ -1,0 +1,67 @@
+/* Projector dashboard: meter, recent attempts, Hall of Humans, lanes. Builds on style.css. */
+body.dash { background: var(--ink); color: #fff; }
+.dash-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 18px 28px; flex-wrap: wrap; }
+.dash-head .logo { font-size: clamp(24px, 3vw, 40px); }
+.live { font: 700 14px "JetBrains Mono"; color: var(--yellow); }
+.live::before { content: "●"; color: var(--red); margin-right: 6px; animation: blink 1s infinite; }
+@keyframes blink { 50% { opacity: .2; } }
+.grid { display: grid; grid-template-columns: 1.25fr 1fr; grid-template-rows: auto auto; gap: 20px; padding: 0 28px 28px; }
+.panel { background: var(--paper); color: var(--ink); border: 4px solid #fff; border-radius: 22px; padding: 20px 24px; box-shadow: 8px 8px 0 var(--red); min-width: 0; }
+.panel h2 { font-family: "Archivo Black"; font-weight: 400; margin: 0 0 10px; font-size: 22px; text-transform: uppercase; letter-spacing: 1px; }
+.meter-panel { grid-row: span 2; text-align: center; }
+.gauge { width: 100%; max-width: 640px; }
+#needle { transform-box: fill-box; transform-origin: 50% 100%; transition: transform 1.4s cubic-bezier(.2, 1.7, .35, 1); }
+.big-label { font-family: "Archivo Black"; font-size: clamp(36px, 5.5vw, 76px); line-height: 1; margin: 4px 0; }
+.big-label.HUMAN { color: var(--green); }
+.big-label.SCRAPER, .big-label.BROWSER, .big-label.VISION { color: var(--red); }
+.big-label.UNCERTAIN { color: #b88a00; font-size: clamp(28px, 3.6vw, 48px); }
+.sub { font: 600 18px Inter; color: var(--muted); }
+.latest-reasons { text-align: left; margin: 14px auto 0; max-width: 620px; font-size: 17px; }
+.latest-reasons li { margin: 4px 0; }
+.feed { list-style: none; margin: 0; padding: 0; max-height: 420px; overflow: hidden; -webkit-mask-image: linear-gradient(#000 80%, transparent); mask-image: linear-gradient(#000 80%, transparent); }
+.feed li { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 4px 12px; padding: 8px 12px 8px 14px; margin-bottom: 6px; border-left: 10px solid var(--c, #999); background: #fff; border-radius: 6px; cursor: default; }
+.feed li.new { animation: pop .9s ease-out; }
+@keyframes pop { 0% { background: var(--yellow); transform: translateX(-12px); } 30% { transform: none; } }
+.feed .lbl { font: 400 19px/1.1 "Archivo Black"; color: var(--c); }
+.feed .nm { display: block; font: 600 13px Inter; color: var(--muted); }
+.feed .score { font: 400 30px/1 "Archivo Black"; text-align: right; }
+.feed .score small { font: 700 11px "JetBrains Mono"; color: var(--muted); display: block; }
+.c-HUMAN { --c: var(--green); } .c-SCRAPER { --c: var(--red); } .c-BROWSER { --c: var(--blue); } .c-VISION { --c: #8a2be2; } .c-UNCERTAIN { --c: #c79a00; }
+.chip { font: 400 13px "Archivo Black"; padding: 4px 8px; border-radius: 8px; border: 2px solid var(--ink); text-align: center; color: #fff; white-space: nowrap; }
+.chip.HUMAN { background: var(--green); } .chip.SCRAPER { background: var(--red); } .chip.BROWSER { background: var(--blue); }
+.chip.VISION { background: #8a2be2; } .chip.UNCERTAIN { background: var(--yellow); color: var(--ink); }
+.why { color: var(--muted); font-size: 14px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.feed li.empty { border: 0; background: none; padding: 0; }
+.hall { margin: 0; padding-left: 0; list-style: none; counter-reset: h; }
+.hall li.new { animation: pop .9s ease-out; }
+.hall li { counter-increment: h; display: flex; gap: 12px; align-items: baseline; padding: 6px 0; border-bottom: 2px dashed #0002; font-size: 17px; }
+.hall li::before { content: counter(h); font-family: "Archivo Black"; width: 28px; color: var(--red); }
+.hall .nm { font-weight: 800; flex: 1; } .hall .st { font: 600 14px "JetBrains Mono"; color: var(--muted); }
+.totals { margin: 18px auto 0; max-width: 620px; }
+.stack { display: flex; height: 22px; border: 3px solid var(--ink); border-radius: 12px; overflow: hidden; }
+.stack i { display: block; background: var(--c); transition: width .6s; } .stack i + i { border-left: 2px solid var(--ink); }
+.counts { display: grid; grid-template-columns: repeat(auto-fit, minmax(64px, 1fr)); gap: 8px; margin-top: 10px; }
+.counts div { border-top: 6px solid var(--c); padding-top: 4px; text-align: left; }
+.counts b { display: block; font: 400 clamp(22px, 2.6vw, 34px)/1 "Archivo Black"; }
+.counts span { font: 700 10px Inter; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); }
+.imp-row { display: grid; grid-template-columns: 150px 1fr 48px; gap: 8px; align-items: center; font-size: 13px; margin: 3px 0; }
+.imp-bar { height: 12px; background: var(--blue); border-radius: 6px; }
+.ctrl { display: flex; gap: 10px; }
+.ctrl button { font: 700 13px Inter; background: transparent; color: #fff; border: 2px solid #fff6; border-radius: 10px; padding: 6px 12px; cursor: pointer; }
+.empty { color: var(--muted); font-style: italic; }
+.lanes-panel { grid-column: 1 / -1; display: grid; grid-template-columns: auto 1fr; gap: 24px; align-items: center; }
+.lane-counts { display: flex; gap: 14px; }
+.lane-box { border: 3px solid var(--ink); border-radius: 16px; padding: 10px 18px; text-align: center; min-width: 150px; }
+.lane-box b { display: block; font: 400 44px "Archivo Black"; line-height: 1.1; }
+.lane-box.h { background: #e5f6ec; } .lane-box.a { background: #fde8e7; }
+.lane-split { height: 16px; border-radius: 8px; overflow: hidden; display: flex; border: 2px solid var(--ink); margin-bottom: 8px; }
+.lane-split i { display: block; transition: width .6s; } .lane-split .h { background: var(--green); } .lane-split .a { background: var(--red); }
+.routes { list-style: none; margin: 0; padding: 0; font-size: 15px; }
+.routes li { display: grid; grid-template-columns: 96px 150px 1fr; gap: 10px; padding: 4px 0; border-bottom: 2px dashed #0002; align-items: center; }
+.routes li.new { animation: pop .9s ease-out; }
+@media (max-width: 900px) { .lanes-panel { grid-template-columns: 1fr; } }
+body.demo .panel { font-size: 1.1em; }
+@media (max-width: 900px) { .grid { grid-template-columns: 1fr; } .meter-panel { grid-row: auto; }  }
+.dash-head .logo small { font-size: .5em; color: #fff; text-shadow: none; }
+.hall-sub { margin: 0 0 8px; font-size: 14px; }
+.imp-h { margin-top: 18px; }

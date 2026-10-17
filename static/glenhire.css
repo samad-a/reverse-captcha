@@ -1,0 +1,39 @@
+/* Glenhire: a dense job board. Search header, filter sidebar, company initials. */
+:root { --ink: #16242c; --muted: #5f6d75; --line: #dfe5e8; --bg: #f5f7f8; --teal: #0d7c6c; --teal-l: #e3f2ef; }
+* { box-sizing: border-box; }
+body { margin: 0; font: 15px/1.5 "Public Sans", system-ui, sans-serif; color: var(--ink); background: var(--bg); }
+.top { background: #fff; border-bottom: 1px solid var(--line); }
+.top-in { max-width: 1120px; margin: 0 auto; padding: 0 24px; height: 60px; display: flex; align-items: center; gap: 28px; }
+.brand { font: 800 22px "Public Sans"; color: var(--ink); text-decoration: none; letter-spacing: -.5px; }
+.brand span { color: var(--teal); }
+.top nav { display: flex; gap: 22px; font-weight: 500; font-size: 14px; color: var(--muted); flex: 1; }
+.top nav span:first-child { color: var(--ink); font-weight: 700; }
+.top .post { font-weight: 600; font-size: 14px; color: var(--teal); }
+.searchbar { background: #fff; border-bottom: 1px solid var(--line); }
+.searchbar-in { max-width: 1120px; margin: 0 auto; padding: 18px 24px; display: flex; gap: 10px; }
+.searchbar input { flex: 1; font: 500 16px "Public Sans"; padding: 12px 14px; border: 1px solid #c4ced3; border-radius: 6px; }
+.searchbar input:focus { outline: 2px solid var(--teal); border-color: var(--teal); }
+.searchbar .loc { flex: 0 0 220px; }
+.layout { max-width: 1120px; margin: 0 auto; padding: 22px 24px 60px; display: grid; grid-template-columns: 220px 1fr; gap: 28px; }
+aside h4 { font-size: 12px; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); margin: 0 0 8px; }
+aside label { display: flex; gap: 8px; align-items: center; font-size: 14px; padding: 3px 0; cursor: pointer; }
+aside .grp { margin-bottom: 22px; }
+.count { font-size: 14px; color: var(--muted); margin: 0 0 10px; display: flex; justify-content: space-between; }
+.job { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; display: grid; grid-template-columns: 48px 1fr auto; gap: 14px; margin-bottom: 8px; }
+.job:hover { border-color: #b9c6cc; }
+.logo-sq { width: 48px; height: 48px; border-radius: 8px; display: grid; place-items: center; font: 800 16px "Public Sans"; color: #fff; }
+.job h3 { margin: 0; font-size: 17px; font-weight: 700; }
+.job .meta { color: var(--muted); font-size: 14px; }
+.job .tags { margin-top: 8px; }
+.job .tags span { display: inline-block; font-size: 12px; font-weight: 600; background: var(--teal-l); color: var(--teal); padding: 2px 8px; border-radius: 4px; margin: 0 6px 4px 0; }
+.job .side { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.job .sal { font-weight: 700; font-size: 15px; }
+.job .age { font-size: 12px; color: var(--muted); }
+.apply { font: 700 14px "Public Sans"; background: var(--teal); color: #fff; border: 0; border-radius: 6px; padding: 8px 16px; cursor: pointer; }
+.apply:hover { background: #0a6658; }
+.done { grid-column: 2 / -1; background: var(--teal-l); border-radius: 6px; padding: 10px 12px; font-size: 14px; }
+@media (max-width: 760px) {
+  .layout { grid-template-columns: 1fr; } aside { display: none; } .top nav, .searchbar .loc { display: none; }
+  .job { grid-template-columns: 40px 1fr; } .job .side { grid-column: 2; align-items: flex-start; text-align: left; } .logo-sq { width: 40px; height: 40px; }
+  .done { grid-column: 1 / -1; }
+}
