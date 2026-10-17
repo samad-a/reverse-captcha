@@ -46,6 +46,7 @@ async def submit(req: Request):
 
     f = features.compute(body.get("telemetry"))
     v = classifier.verdict(f, correct, elapsed, trap, given, c["answer"])
+    v = classifier.apply_model(v, f, correct, elapsed, trap)
     token = secrets.token_urlsafe(16) if v["passed"] else None
     attempt_id = db.add_attempt(v, f, correct, trap, given, c["answer"],
                                 true_label=body.get("true_label"), token=token)

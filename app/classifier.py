@@ -1,5 +1,49 @@
-"""Transparent rule-based verdict. Every threshold comes from config.py."""
+"""Transparent rule-based verdict. Every threshold comes from config.py. Optional trained model (ml/train.py)."""
+import os
+
 from . import config
+from .features import FEATURE_NAMES
+
+MODEL_FEATURES = FEATURE_NAMES + ["correct", "elapsed", "trap"]
+_model = {"mtime": None, "obj": None}
+
+
+def vector(f, correct, elapsed, trap):
+    return [float(f.get(k, 0)) for k in FEATURE_NAMES] + [float(correct), float(elapsed), float(trap)]
+
+
+def _load_model():
+    if not config.USE_MODEL or not os.path.exists(config.MODEL_PATH):
+        return None
+    mt = os.path.getmtime(config.MODEL_PATH)
+    if mt != _model["mtime"]:
+        import joblib
+        _model["obj"], _model["mtime"] = joblib.load(config.MODEL_PATH), mt
+    return _model["obj"]
+
+
+def apply_model(v, f, correct, elapsed, trap):
+    """Let the trained model pick the label, but access is always decided by the challenge rules."""
+    m = _load_model()
+    if not m:
+        return v
+    try:
+        proba = m["model"].predict_proba([vector(f, correct, elapsed, trap)])[0]
+    except Exception as e:  # stale model with different features etc.
+        v["model"] = f"rules (model error: {type(e).__name__})"
+        return v
+    classes = list(m["model"].classes_)
+    i = max(range(len(proba)), key=lambda k: proba[k])
+    label, p = classes[i], float(proba[i])
+    consistent = (label == HUMAN) != v["passed"]
+    if consistent and label != v["label"]:
+        v["reasons"]["robotic" if v["passed"] else "human"].insert(0, f"{m['name']} model overrode rules ({v['label']} → {label})")
+    if consistent:
+        v["label"], v["likely"], v["confidence"] = label, label, round(p, 2)
+        v["model"] = m["name"]
+    else:
+        v["model"] = f"rules ({m['name']} disagreed: {label})"
+    return v
 
 HUMAN, SCRAPER, BROWSER, VISION, UNCERTAIN = "HUMAN", "SCRAPER", "BROWSER AGENT", "VISION AGENT", "UNCERTAIN"
 
