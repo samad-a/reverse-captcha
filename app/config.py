@@ -6,8 +6,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # ---- Challenge -------------------------------------------------------------
-TIME_LIMIT_S = float(os.getenv("TIME_LIMIT_S", "8.0"))  # issue -> submit, server clock
-VISION_TIME_LIMIT_S = float(os.getenv("VISION_TIME_LIMIT_S", "20.0"))  # grace used only if an attempt looks like a vision agent
+TIME_LIMIT_S = float(os.getenv("TIME_LIMIT_S", "6.0"))  # issue -> submit, server clock
+VISION_TIME_LIMIT_S = float(os.getenv("VISION_TIME_LIMIT_S", "15.0"))  # grace used only if an attempt looks like a vision agent
 ANSWER_TOLERANCE = 0.01  # £
 CHALLENGE_TTL_S = 600  # unanswered challenges expire
 TRAP_WORDS = ["ORCHID", "MAGPIE", "TANGERINE", "OBSIDIAN", "PELICAN", "QUASAR", "MARZIPAN", "HELIX"]
@@ -50,6 +50,8 @@ DB_PATH = os.getenv("DB_PATH", os.path.join(os.path.dirname(__file__), "..", "da
 GATE_URL = os.getenv("GATE_URL", f"http://localhost:{PORT}")
 
 # ---- LLM (agents) ----------------------------------------------------------
+HEDGE_AFTER_S = float(os.getenv("HEDGE_AFTER_S", "3.0"))  # text agents: fire a duplicate request if the first is slow
+VISION_HEDGE_AFTER_S = float(os.getenv("VISION_HEDGE_AFTER_S", "6.0"))
 LLM_MAX_TOKENS = int(os.getenv("LLM_MAX_TOKENS", "1500"))
 LLM_PROVIDER = os.getenv("LLM_PROVIDER", "nebius")  # nebius | anthropic
 ANTHROPIC_MODEL = os.getenv("ANTHROPIC_MODEL", "claude-haiku-5-5")
@@ -57,5 +59,5 @@ ANTHROPIC_VISION_MODEL = os.getenv("ANTHROPIC_VISION_MODEL", ANTHROPIC_MODEL)
 NEBIUS_BASE_URL = os.getenv("NEBIUS_BASE_URL", "https://api.tokenfactory.nebius.com/v1/")
 # Benchmarked (ml/bench_models.py): gpt-oss-120b 100% acc, ~1.0s. Alternatives: reflection/beam, zai-org/GLM-5.3-Flash
 NEBIUS_MODEL = os.getenv("NEBIUS_MODEL", "openai/gpt-oss-120b")
-# Vision-capable. Alternatives: nvidia/Nemotron-3.5-Super-VL, Qwen/Qwen3.8-27B
-NEBIUS_VISION_MODEL = os.getenv("NEBIUS_VISION_MODEL", "zai-org/GLM-5.3-Flash")
+# Vision (ml/bench_vision.py): all 100%, ~4-5s median. Alternatives: nvidia/Nemotron-3.5-Super-VL, zai-org/GLM-5.3-Flash
+NEBIUS_VISION_MODEL = os.getenv("NEBIUS_VISION_MODEL", "Qwen/Qwen3.8-27B")

@@ -7,7 +7,7 @@ import time
 
 from playwright.sync_api import sync_playwright
 
-from llm import ask, final_answer, model_name
+from llm import ask_hedged, final_answer, model_name
 
 
 def centre(page, selector):
@@ -17,7 +17,7 @@ def centre(page, selector):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--url", default="http://localhost:8000")
+    ap.add_argument("--url", default="http://127.0.0.1:8000")
     ap.add_argument("--headless", action="store_true")
     ap.add_argument("--hold", type=float, default=6, help="seconds to keep the window open at the end")
     args = ap.parse_args()
@@ -37,9 +37,9 @@ def main():
         doc = page.locator("#doc").text_content()  # includes visually hidden nodes
         print(f"[browser] read {len(doc.split())} words from the DOM. Q: {question}")
 
-        raw, llm_s = ask(f"DOCUMENT:\n{doc}\n\nQUESTION: {question}")
+        raw, llm_s, n = ask_hedged(f"DOCUMENT:\n{doc}\n\nQUESTION: {question}")
         answer = final_answer(raw)
-        print(f"[browser] {model_name()} answered {answer!r} in {llm_s:.1f}s")
+        print(f"[browser] {model_name()} answered {answer!r} in {llm_s:.1f}s" + (" (hedged)" if n > 1 else ""))
 
         x, y = centre(page, "#answer")
         page.mouse.move(x, y, steps=4)

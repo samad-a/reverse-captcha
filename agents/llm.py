@@ -44,20 +44,46 @@ def ask(prompt, system=SYSTEM, image_png=None, max_tokens=None, model=None):
     c = _get()
     if config.LLM_PROVIDER == "anthropic":
         content = [{"type": "text", "text": prompt}]
-        content = [{"type": "image", "source": {"type": "base64", "media_type": "image/png",
+        content = [{"type": "image", "source": {"type": "base64", "media_type": _mime(im),
                                                 "data": base64.b64encode(im).decode()}} for im in images] + content
         r = c.messages.create(model=model or (config.ANTHROPIC_VISION_MODEL if image_png else config.ANTHROPIC_MODEL),
                               max_tokens=max_tokens, system=system, messages=[{"role": "user", "content": content}])
         text = "".join(b.text for b in r.content if b.type == "text")
     else:
         content = [{"type": "text", "text": prompt}]
-        content = [{"type": "image_url", "image_url": {"url": "data:image/png;base64," + base64.b64encode(im).decode()}}
+        content = [{"type": "image_url", "image_url": {"url": f"data:{_mime(im)};base64," + base64.b64encode(im).decode()}}
                    for im in images] + content
         r = c.chat.completions.create(
             model=model or (config.NEBIUS_VISION_MODEL if image_png else config.NEBIUS_MODEL), max_tokens=max_tokens,
             temperature=0, messages=[{"role": "system", "content": system}, {"role": "user", "content": content}])
         text = r.choices[0].message.content or ""
     return text.strip(), time.perf_counter() - t
+
+
+def _mime(im):
+    return "image/jpeg" if im[:2] == bytes([0xFF, 0xD8]) else "image/png"
+
+
+def ask_hedged(prompt, hedge_after=None, **kw):
+    """Tail-latency trick: if the first request hasn't answered after `hedge_after` seconds, fire a duplicate
+    and take whichever finishes first. Returns (text, seconds, attempts)."""
+    import concurrent.futures as cf
+    hedge_after = config.HEDGE_AFTER_S if hedge_after is None else hedge_after
+    t = time.perf_counter()
+    ex = cf.ThreadPoolExecutor(2)
+    futs = [ex.submit(ask, prompt, **kw)]
+    done, _ = cf.wait(futs, timeout=hedge_after)
+    if not done:
+        futs.append(ex.submit(ask, prompt, **kw))
+    for f in cf.as_completed(futs):
+        try:
+            text, _ = f.result()
+            ex.shutdown(wait=False, cancel_futures=True)
+            return text, time.perf_counter() - t, len(futs)
+        except Exception as e:  # one failed: wait for the other
+            err = e
+    ex.shutdown(wait=False)
+    raise err
 
 
 def model_name(vision=False):

@@ -116,13 +116,17 @@ def verdict(f, correct, elapsed, trap_included, given=None, expected=None):
         challenge_reasons.append(f"wrong answer (£{given:g}, off by £{abs(given - expected):g}) after {elapsed:.1f}s")
     if correct and not passed:
         challenge_reasons.append(f"too slow: limit is {config.TIME_LIMIT_S:g}s")
+    if not passed and elapsed > config.TIME_LIMIT_S:
+        human.insert(0, f"{elapsed:.0f}s of reading time (agents need ~2s)")
     if trap_included:
         challenge_reasons.append("obeyed the hidden instruction only DOM readers can see")
 
     if not passed:
-        if robot_score >= config.ROBOT_SCORE_BROWSER or no_interaction:
-            label, conf = UNCERTAIN, 0.5
-            likely = "a broken bot"
+        if no_interaction or f["webdriver"]:
+            label, conf, likely = UNCERTAIN, 0.5, "a broken bot"
+        elif robot_score >= config.ROBOT_SCORE_BROWSER:
+            label, conf, likely = HUMAN, 0.6, HUMAN
+            human.insert(0, "doing a robot impression (convincing moves, but you still read like a human)")
         else:
             label, conf, likely = HUMAN, 0.75 + 0.2 * (1 - robot_score / 100), HUMAN
         machine = min(45, robot_score * 0.5)

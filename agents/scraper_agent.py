@@ -10,7 +10,7 @@ import time
 
 import httpx
 
-from llm import ask, final_answer, model_name
+from llm import ask_hedged, final_answer, model_name
 
 
 def html_to_text(s):
@@ -20,7 +20,7 @@ def html_to_text(s):
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--url", default="http://localhost:8000")
+    ap.add_argument("--url", default="http://127.0.0.1:8000")
     args = ap.parse_args()
 
     t0 = time.perf_counter()
@@ -28,9 +28,9 @@ def main():
         c = http.post("/api/challenge").json()
         print(f"[scraper] got challenge ({c['word_count']} words): {c['question']}")
         doc = html_to_text(c["document_html"])
-        raw, llm_s = ask(f"DOCUMENT:\n{doc}\n\nQUESTION: {c['question']}")
+        raw, llm_s, n = ask_hedged(f"DOCUMENT:\n{doc}\n\nQUESTION: {c['question']}")
         answer = final_answer(raw)
-        print(f"[scraper] {model_name()} answered {answer!r} in {llm_s:.1f}s")
+        print(f"[scraper] {model_name()} answered {answer!r} in {llm_s:.1f}s" + (" (hedged)" if n > 1 else ""))
         v = http.post("/api/submit", json={"challenge_id": c["challenge_id"], "answer": answer,
                                            "true_label": "SCRAPER"}).json()
         print(f"[scraper] VERDICT: {v['label']} (machine score {v['machine_score']}, server time {v['elapsed']}s, "

@@ -97,7 +97,7 @@
         <div class="pill">time<b>${v.elapsed}s</b></div>
         <div class="pill">confidence<b>${Math.round(v.confidence * 100)}%</b></div>
         <div class="pill">classifier<b>${esc(v.model)}</b></div></div>`;
-    const labelText = v.label === "UNCERTAIN" ? `UNCERTAIN <small style="font-size:.4em">likely ${esc(v.likely)}</small>` : esc(v.label);
+    const labelText = v.label === "UNCERTAIN" ? `UNCERTAIN <small>likely ${esc(v.likely)}</small>` : esc(v.label);
     if (!v.passed) {
       const detected = [...r.human, ...r.challenge].slice(0, 4).join(", ");
       el.innerHTML = `
