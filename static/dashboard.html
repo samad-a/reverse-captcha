@@ -12,43 +12,47 @@
 <body class="dash">
   <header class="dash-head">
     <div class="logo"><span class="rev">⟲</span> REVERSE<b>CAPTCHA</b> <small>live</small></div>
-    <div class="live" id="liveText">waiting for visitors…</div>
-    <div class="ctrl"><button id="resetBtn" title="Archive all attempts (kept for training)">Reset</button></div>
+    <div class="head-right">
+      <div class="live" id="liveText">waiting for visitors…</div>
+      <div class="ctrl"><button id="resetBtn" title="Archive all attempts (kept for training)">Reset</button></div>
+    </div>
   </header>
   <div class="grid">
     <section class="panel meter-panel">
       <h2>Latest visitor</h2>
-      <svg class="gauge" viewBox="-40 0 680 345" aria-label="Human to machine meter">
+      <svg class="gauge" viewBox="-40 0 680 380" aria-label="Human to machine meter">
         <defs><linearGradient id="g" x1="0" x2="1"><stop offset="0" stop-color="#18a54a"/><stop offset=".5" stop-color="#ffd400"/><stop offset="1" stop-color="#e2231a"/></linearGradient></defs>
-        <path d="M40 300 A260 260 0 0 1 560 300" fill="none" stroke="#111" stroke-width="64" stroke-linecap="round"/>
-        <path d="M40 300 A260 260 0 0 1 560 300" fill="none" stroke="url(#g)" stroke-width="52" stroke-linecap="round"/>
-        <text x="40" y="335" font-family="Archivo Black" font-size="24" text-anchor="middle">HUMAN</text>
-        <text x="560" y="335" font-family="Archivo Black" font-size="24" text-anchor="middle">MACHINE</text>
+        <path d="M40 300 A260 260 0 0 1 560 300" fill="none" stroke="#111" stroke-width="60" stroke-linecap="round"/>
+        <path d="M40 300 A260 260 0 0 1 560 300" fill="none" stroke="url(#g)" stroke-width="48" stroke-linecap="round"/>
+        <text x="40" y="372" font-family="Archivo Black" font-size="24" text-anchor="middle" fill="#18a54a">HUMAN</text>
+        <text x="560" y="372" font-family="Archivo Black" font-size="24" text-anchor="middle" fill="#e2231a">MACHINE</text>
         <g id="needle" style="transform: rotate(-90deg)">
-          <polygon points="292,300 308,300 300,62" fill="#111"/>
+          <polygon points="293,300 307,300 300,70" fill="#111"/>
         </g>
-        <circle cx="300" cy="300" r="26" fill="#111"/><text id="scoreTxt" x="300" y="308" fill="#fff" font-family="JetBrains Mono" font-weight="700" font-size="22" text-anchor="middle">–</text>
+        <circle cx="300" cy="300" r="34" fill="#111"/><text id="scoreTxt" x="300" y="309" fill="#fff" font-family="JetBrains Mono" font-weight="700" font-size="26" text-anchor="middle">–</text>
       </svg>
       <div id="bigLabel" class="big-label">–</div>
       <div id="latestSub" class="sub"></div>
       <ul id="latestReasons" class="latest-reasons"></ul>
       <div class="totals"><div class="stack" id="stack"></div><div class="counts" id="counts"></div></div>
     </section>
-    <section class="panel">
-      <h2>Recent attempts</h2>
-      <ul class="feed" id="feed"><li class="empty">No one yet. Go on, try it.</li></ul>
+    <section class="panel feed-panel">
+      <h2>Recent attempts <span class="hint">machine score /100</span></h2>
+      <ul class="feed fade" id="feed"><li class="empty">No one yet. Go on, try it.</li></ul>
     </section>
-    <section class="panel">
-      <h2>🏛️ Hall of Humans</h2>
-      <p class="sub hall-sub">Brave mammals who tried and failed, closest first</p>
-      <ol class="hall" id="hall"><li class="empty">Nobody has admitted to being human yet.</li></ol>
+    <section class="panel hall-panel">
+      <h2>Hall of Humans <span class="hint">tried and failed, closest first</span></h2>
+      <ol class="hall fade" id="hall"><li class="empty">Nobody has admitted to being human yet.</li></ol>
       <div id="impWrap" class="hidden"><h2 class="imp-h">What the model looks at</h2><div id="imp"></div></div>
     </section>
     <section class="panel lanes-panel">
-      <div><h2>🚦 Human vs agent lanes</h2>
-        <div class="lane-counts"><div class="lane-box h">human lane<b id="laneH">0</b></div><div class="lane-box a">agent lane<b id="laneA">0</b></div></div></div>
-      <div><div class="lane-split"><i class="h" id="splitH" style="width:50%"></i><i class="a" id="splitA" style="width:50%"></i></div>
-        <ul class="routes" id="routes"><li class="empty">No traffic yet. Try /sites</li></ul></div>
+      <h2>Human vs agent lanes <span class="hint">demo sites route agents to their own API</span></h2>
+      <div class="lanes-top">
+        <div class="lane-count h"><b id="laneH">0</b>human lane</div>
+        <div class="lane-split"><i class="h" id="splitH" style="width:50%"></i><i class="a" id="splitA" style="width:50%"></i></div>
+        <div class="lane-count a"><b id="laneA">0</b>agent lane</div>
+      </div>
+      <ul class="routes fade" id="routes"><li class="empty">No traffic yet. Try /sites</li></ul>
     </section>
   </div>
   <script src="/static/dashboard.js"></script>
