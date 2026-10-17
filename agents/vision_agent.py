@@ -10,7 +10,7 @@ import time
 sys.path.insert(0, os.path.dirname(__file__))
 from playwright.sync_api import sync_playwright  # noqa: E402
 
-from browser import hold, launch
+from browser import fit_viewport, hold, launch
 from llm import ask_hedged, final_answer, model_name  # noqa: E402
 from app import config  # noqa: E402
 
@@ -81,7 +81,7 @@ def main():
             for r in reasons:
                 print(f"    {k:9s} {r}")
         if not args.headless:
-            page.set_viewport_size({"width": 1100, "height": 860})
+            page.set_viewport_size(fit_viewport(args.headless, 1100, 860))
         hold(page, args)
         if browser.is_connected():
             browser.close()
