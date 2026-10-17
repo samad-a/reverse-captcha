@@ -14,13 +14,12 @@
 ## 1. A judge tries normally → HUMAN (blocked)
 - Hand over the laptop: "Prove you're not human. Just tick the box."
 - The checkbox silently checks how they moved. Result: **ACCESS DENIED: suspiciously human**, with the reasons (curved path, hesitation, sloppy click). No wall of text.
-- The consolation prize is a picker for the four demo sites (flights, contracts, tickets, shop). Let them click one and use it normally. They're never challenged.
+- The projector meter swings to HUMAN. Get them to type their name on the picker → it appears in the **Hall of Humans**.
+- The consolation prize is a picker for the six demo sites (flights, contracts, tickets, shop, jobs, news). Let them click one and use it normally. Humans are never challenged.
 
-## 2. A judge tries to "act like a bot" → still HUMAN
-- Press **"Think you can pass as a machine? Try the 6-second test"** on the picker.
-- They get ~1,900 words of airline fare rules and a refund question, with a 6-second bar. **No human can read that and compute a refund in 6 seconds.** The challenge is the real wall; behaviour only decides *which* machine you are.
-- Get them to type their name → it appears in the **Hall of Humans** on the projector.
-- (Agents never see the picker: when the checkbox flags machine-like behaviour, the visitor goes straight to the challenge, which also works out *which kind* of agent it is.)
+## 2. What happens to machines
+- Agents never see the picker. When the checkbox flags machine-like behaviour, the visitor gets a ~1,900-word fare-rules document and a refund question with a 6-second limit. Agents answer in about 2s. **No human can read that and compute a refund in 6 seconds**, and the hidden instruction in the document tells *which kind* of agent it is (next steps).
+- If a judge asks "what if I act like a bot?": a judge who ticks the box in a ruler-straight line, dead centre, may convince the checkbox and then gets the 6-second test, which they'll fail. Result: "doing a robot impression".
 
 ## 3. `browser_agent.py` → BROWSER AGENT (about 2s)
 - Run it. A Chromium window opens, the cursor teleports, the answer goes in, and it gets through in about 2 seconds.
@@ -43,6 +42,8 @@ Open http://localhost:8000/sites, then run one or two of these, depending on whi
 - **Wordsmith (legal):** `.venv\Scripts\python agents\site_agent.py contracts`. The agent gets rerouted, gpt-oss flags clauses 3, 4 and 7 as risky, and it signs **on behalf of** its principal. The site records a *delegated agent signature* and returns `pending_human_countersign` because clause 7 is high risk. "You always know whether a human or an agent signed, and on whose behalf."
 - **Ticketing:** `.venv\Scripts\python agents\site_agent.py tickets`. It reserves 2 tickets, then tries to scalp 4 more and gets **429 quota**. "Bots get their own queue and can't crowd out fans."
 - **Shopping:** `.venv\Scripts\python agents\site_agent.py shop`. It buys the limited drop, then tries a second pair and gets **429 drop limit**.
+- **Job boards:** `.venv\Scripts\python agents\site_agent.py jobs`. gpt-oss picks the best-fit job for the candidate and writes a cover note. The application is shown to the employer as *"AI-assisted, on behalf of …"*. Then it tries to mass-apply to every other job: 2 more go through, then **429 daily cap**. "Real candidates still get read."
+- **News:** `.venv\Scripts\python agents\site_agent.py news`. The crawler licenses the article (attribution required, no AI training) and summarises it. Then it tries to bulk-crawl the archive for free and gets **402 Payment Required** after the free allowance. "Crawlers pay for journalism instead of scraping it."
 - The dashboard's **Human vs agent lanes** panel shows every reroute with a site icon.
 
 ## 5. (Optional) `vision_agent.py` → VISION AGENT
