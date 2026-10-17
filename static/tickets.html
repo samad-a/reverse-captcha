@@ -12,7 +12,7 @@
 <body>
   <header class="top"><a class="brand" href="/tickets">Giga<span>box</span></a><nav><span>Gigs</span><span>Comedy</span><span>Festivals</span><span>Sign in</span></nav></header>
   <main class="wrap">
-    <div class="event">
+    <div class="event" id="eventView">
       <div>
         <div class="poster">
           <div class="pre">Gigabox presents</div>
@@ -32,9 +32,32 @@
         </div>
         <button id="buyBtn">Join the queue</button>
         <p class="fine">Prices include booking fees. Tickets are named to the buyer and can only be resold at face value through Gigabox Exchange.</p>
-        <div id="done" class="done hidden"></div>
       </div>
     </div>
+    <section id="room" class="room hidden" aria-live="polite">
+      <div class="room-head"><span class="pulse"></span><span id="roomState">You're in the queue</span></div>
+      <h1 class="room-ev" id="roomEv"></h1>
+      <p class="room-sub" id="roomSub"></p>
+      <div id="waiting">
+        <div class="pos-label">Fans ahead of you</div>
+        <div class="pos" id="pos">–</div>
+        <div class="bar"><i id="bar"></i></div>
+        <div class="room-meta"><span id="eta"></span><span>Keep this tab open. You won't lose your place.</span></div>
+        <div class="lanes-note"><b>Fan queue only.</b> Ticket bots and AI agents wait in a separate agent lane, capped at 2 tickets per real person, so they never get ahead of you.</div>
+      </div>
+      <div id="turn" class="hidden">
+        <div class="stub">
+          <div class="stub-main">
+            <small id="stubKicker">Held for you</small>
+            <b id="stubTier"></b>
+            <span id="stubEv"></span>
+          </div>
+          <div class="stub-side"><small>Hold ends in</small><b id="hold">10:00</b></div>
+        </div>
+        <button id="confirmBtn" class="big-btn">Confirm tickets</button>
+        <p class="fine" id="turnFine">Demo: no payment is taken. Tickets are named to you and can't be transferred.</p>
+      </div>
+    </section>
     <div class="agent-note"><span class="rc">⟲</span><span><b>Fans first.</b> Ticket bots and AI agents get a separate agent queue with a 2-ticket quota per real person, so they can't crowd out fans.</span></div>
   </main>
   <script src="/static/demobar.js"></script>
@@ -56,13 +79,67 @@
     };
     document.getElementById("qty").addEventListener("change", render);
     render();
-    document.getElementById("buyBtn").addEventListener("click", async () => {
-      const r = await RCRoute("tickets", { event: e.id, tier: sel.tier, qty: document.getElementById("qty").value });
-      if (!r) return;
-      const d = document.getElementById("done");
-      d.classList.remove("hidden");
-      d.innerHTML = `<b>You're in the fan queue: #${r.result.queue_position}</b>${r.result.qty} × ${r.result.tier} held for ${r.result.hold_minutes} minutes. (Demo: no payment.)`;
+    const buyBtn = document.getElementById("buyBtn");
+    buyBtn.addEventListener("click", async () => {
+      if (buyBtn.disabled) return;
+      buyBtn.disabled = true; buyBtn.textContent = "Joining the queue…";
+      const qty = +document.getElementById("qty").value;
+      const r = await RCRoute("tickets", { event: e.id, tier: sel.tier, qty });
+      if (!r) { buyBtn.disabled = false; buyBtn.textContent = "Join the queue"; return; } // agents are already being rerouted
+      enterQueue(r.result, sel, qty);
     });
+
+    // The waiting room: a live, shrinking queue position, then a held-ticket stub with a hold timer.
+    function enterQueue(res, tier, qty) {
+      const $ = (id) => document.getElementById(id);
+      $("eventView").classList.add("hidden");
+      document.querySelector(".agent-note").classList.add("hidden");
+      $("room").classList.remove("hidden");
+      window.scrollTo({ top: 0 });
+      $("roomEv").textContent = e.name;
+      $("roomSub").textContent = `${qty} × ${tier.tier} · £${tier.price_gbp * qty} · ${e.venue}`;
+      const start = Math.max(1, res.queue_position);
+      let ahead = start;
+      const show = () => {
+        $("pos").textContent = ahead.toLocaleString("en-GB");
+        $("bar").style.width = `${100 * (1 - ahead / start)}%`;
+        const secs = Math.ceil(ahead * 0.12) * 5; // pretend wait; the demo moves faster than this
+        $("eta").textContent = ahead ? `Estimated wait: ${secs < 60 ? "under a minute" : `about ${Math.round(secs / 60)} min`}` : "";
+      };
+      show();
+      const step = () => {
+        if (ahead <= 0) return yourTurn();
+        // Big jumps early, single steps at the end, so the last few seconds feel tense.
+        ahead = Math.max(0, ahead - (ahead > 8 ? 3 + Math.floor(Math.random() * Math.max(1, ahead / 6)) : 1));
+        $("pos").classList.remove("tick"); void $("pos").offsetWidth; $("pos").classList.add("tick");
+        show();
+        setTimeout(step, ahead > 8 ? 450 + Math.random() * 450 : 350 + Math.random() * 300);
+      };
+      setTimeout(step, 1200);
+
+      function yourTurn() {
+        $("room").classList.add("go");
+        $("roomState").textContent = "It's your turn";
+        $("waiting").classList.add("hidden");
+        $("turn").classList.remove("hidden");
+        $("stubTier").textContent = `${qty} × ${tier.tier}`;
+        $("stubEv").textContent = `${e.name} · ${$("evDate").textContent}`;
+        let left = (res.hold_minutes || 10) * 60;
+        const timer = setInterval(() => {
+          left = Math.max(0, left - 1);
+          $("hold").textContent = `${Math.floor(left / 60)}:${String(left % 60).padStart(2, "0")}`;
+          if (!left) { clearInterval(timer); $("confirmBtn").disabled = true; $("turnFine").textContent = "Hold expired. Refresh to queue again."; }
+        }, 1000);
+        $("confirmBtn").addEventListener("click", () => {
+          clearInterval(timer);
+          $("roomState").textContent = "You're going!";
+          $("stubKicker").textContent = "Your tickets";
+          $("confirmBtn").remove();
+          $("hold").parentElement.innerHTML = "<small>Status</small><b>Booked</b>";
+          $("turnFine").textContent = "Demo: no payment taken. Your e-tickets would arrive by email, named to you.";
+        }, { once: true });
+      }
+    }
   })();
   </script>
 </body>
