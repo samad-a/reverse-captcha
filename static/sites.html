@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Reverse CAPTCHA demo sites</title>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Barlow+Condensed:ital,wght@1,800&family=Fraunces:wght@700&family=Playfair+Display:wght@900&family=IBM+Plex+Sans:wght@600&family=Public+Sans:wght@800&text=HAARLINEInkwellGIGABOXThistle%26ThreadglenhireTheHaarHerald%20&display=swap" rel="stylesheet">
 <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/static/style.css">
 </head>
@@ -15,13 +16,13 @@
       <h1 style="font-size:clamp(28px,5vw,48px);margin-top:0">Humans browse. Agents get a lane.</h1>
       <p class="lede">On real sites, nobody solves a challenge. Each page below watches behaviour silently. When you press the main button, people carry on as normal and obvious agents are rerouted to a structured <b>agent lane</b> with agent-specific rules.</p>
       <div class="hub">
-        <a href="/flights"><div class="ico">✈️</div><b>Flight search</b><p>Agents get fares as JSON, so bot searches don't slow real travellers.</p><code>agents\flight_agent.py</code></a>
-        <a href="/contracts"><div class="ico">✍️</div><b>Contract signing</b><p>Agents get structured clauses and risk flags, and sign <i>on behalf of</i> a named person. High-risk clauses need a human countersign.</p><code>agents\site_agent.py contracts</code></a>
-        <a href="/tickets"><div class="ico">🎟️</div><b>Event ticketing</b><p>A separate agent queue with a 2-ticket quota per real person. Scalper bots can't crowd out fans.</p><code>agents\site_agent.py tickets</code></a>
-        <a href="/shop"><div class="ico">👟</div><b>Online shopping</b><p>Product feed and checkout API, with a limit of 1 pair per customer during the drop.</p><code>agents\site_agent.py shop</code></a>
-        <a href="/jobs"><div class="ico">💼</div><b>Job board</b><p>Agents apply through an API, labelled as AI-assisted, with a daily cap so they can't mass-apply.</p><code>agents\site_agent.py jobs</code></a>
-        <a href="/news"><div class="ico">📰</div><b>News</b><p>AI crawlers get a licensed content API: summaries free, full text with attribution, no training use, and bulk crawling costs money.</p><code>agents\site_agent.py news</code></a>
-        <a href="/"><div class="ico">⟲</div><b>The gate</b><p>Tick the box: humans get this picker, and machine-like visitors must prove they're machines.</p><code>agents\browser_agent.py</code></a>
+        <a href="/flights"><div class="mark haar">HAARLINE</div><b>Flight search</b><p>Agents get fares as JSON, so bot searches don't slow real travellers.</p><code>agents\flight_agent.py</code></a>
+        <a href="/contracts"><div class="mark ink"><i></i>Inkwell</div><b>Contract signing</b><p>Agents get structured clauses and risk flags, and sign <i>on behalf of</i> a named person. High-risk clauses need a human countersign.</p><code>agents\site_agent.py contracts</code></a>
+        <a href="/tickets"><div class="mark giga">GIGA<span>BOX</span></div><b>Event ticketing</b><p>A separate agent queue with a 2-ticket quota per real person. Scalper bots can't crowd out fans.</p><code>agents\site_agent.py tickets</code></a>
+        <a href="/shop"><div class="mark thistle">Thistle <span>&amp;</span> Thread</div><b>Online shopping</b><p>Product feed and checkout API, with a limit of 1 pair per customer during the drop.</p><code>agents\site_agent.py shop</code></a>
+        <a href="/jobs"><div class="mark glen">glen<span>hire</span></div><b>Job board</b><p>Agents apply through an API, labelled as AI-assisted, with a daily cap so they can't mass-apply.</p><code>agents\site_agent.py jobs</code></a>
+        <a href="/news"><div class="mark herald">The Haar Herald</div><b>News</b><p>AI crawlers get a licensed content API: summaries free, full text with attribution, no training use, and bulk crawling costs money.</p><code>agents\site_agent.py news</code></a>
+        <a href="/"><div class="mark gate">⟲</div><b>The gate</b><p>Tick the box: humans get this picker, and machine-like visitors must prove they're machines.</p><code>agents\browser_agent.py</code></a>
       </div>
     </section>
   </main>

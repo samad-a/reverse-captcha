@@ -4,28 +4,29 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Haarline: flight results</title>
-<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Barlow:wght@400;600;700&family=Barlow+Condensed:ital,wght@0,700;1,800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/static/flights.css">
+<link rel="stylesheet" href="/static/demo.css">
 </head>
 <body>
-  <header class="top"><a class="brand" href="/flights">haar<span>line</span></a><nav><span>Flights</span><span>Hotels</span></nav></header>
+  <header class="top"><a class="brand" href="/flights">haar<span>line</span></a><nav><span>Flights</span><span>Hotels</span><span>Car hire</span><span>Manage booking</span></nav></header>
   <main class="wrap">
     <div class="summary"><h2 id="title">Flights</h2><span class="lane-pill">HUMAN LANE · full UI</span></div>
     <div id="list"></div>
-    <p class="c" style="color:var(--muted);font-size:13px">Demo inventory. Prices and schedules are made up.</p>
+    <p class="small-print">Basic fares include one under-seat bag. Cabin bags from £14, seat selection from £4. Demo inventory: prices and schedules are made up.</p>
   </main>
   <script>
   (async () => {
     const qs = location.search;
     const d = await (await fetch("/api/flights/search" + qs)).json();
     const q = d.query, A = d.airports;
-    document.getElementById("title").textContent = `${A[q.from] || q.from} → ${A[q.to] || q.to} · ${q.depart || "any date"} · ${q.pax} traveller${q.pax === "1" ? "" : "s"}`;
+    document.getElementById("title").textContent = `${A[q.from] || q.from} → ${A[q.to] || q.to} · ${q.depart || "any date"}, ${q.pax} adult${q.pax === "1" ? "" : "s"}`;
     const hm = (m) => `${Math.floor(m / 60)}h ${m % 60}m`;
     document.getElementById("list").innerHTML = d.flights.map((f) => `
       <div class="flight"><div><div class="t">${f.depart_time} ${f.origin} → ${f.destination}</div><div class="c">${f.carrier} · ${f.flight}</div></div>
         <div class="c">${hm(f.duration_min)}<br>${f.stops ? f.stops + " stop" : "Direct"}</div>
-        <div class="p">£${f.price_gbp}</div><button>Select</button></div>`).join("");
+        <div class="p">£${f.price_gbp}<small>Basic, under-seat bag</small></div><button>Select</button></div>`).join("");
     document.querySelectorAll(".flight button").forEach((b) => b.addEventListener("click", () => {
       const t = document.createElement("div"); t.className = "toast"; t.textContent = "Booking isn't part of this demo, but you made it through as a human ✈️";
       document.body.appendChild(t); setTimeout(() => t.remove(), 2500);

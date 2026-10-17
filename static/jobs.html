@@ -4,32 +4,67 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Glenhire: tech jobs in Scotland</title>
-<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Public+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/static/flights.css">
+<link rel="stylesheet" href="/static/demo.css">
 <style>
-  :root { --sky: #0f3d3e; --sky2: #128c7e; --sun: #ffd166; }
-  body { background: #f4f8f7; }
-  .filter { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
-  .filter input { flex: 1; min-width: 220px; font: 600 16px Inter; padding: 12px 14px; border: 2px solid var(--line); border-radius: 12px; }
-  .job { background: #fff; border: 1px solid var(--line); border-radius: 14px; padding: 18px 20px; display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; margin-bottom: 12px; }
-  .job h3 { margin: 0 0 4px; font-size: 19px; }
+  :root { --ink: #16242c; --muted: #5f6d75; --line: #dfe5e8; --bg: #f5f7f8; --teal: #0d7c6c; --teal-l: #e3f2ef; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 15px/1.5 "Public Sans", system-ui, sans-serif; color: var(--ink); background: var(--bg); }
+  .top { background: #fff; border-bottom: 1px solid var(--line); }
+  .top-in { max-width: 1120px; margin: 0 auto; padding: 0 24px; height: 60px; display: flex; align-items: center; gap: 28px; }
+  .brand { font: 800 22px "Public Sans"; color: var(--ink); text-decoration: none; letter-spacing: -.5px; }
+  .brand span { color: var(--teal); }
+  .top nav { display: flex; gap: 22px; font-weight: 500; font-size: 14px; color: var(--muted); flex: 1; }
+  .top nav span:first-child { color: var(--ink); font-weight: 700; }
+  .top .post { font-weight: 600; font-size: 14px; color: var(--teal); }
+  .searchbar { background: #fff; border-bottom: 1px solid var(--line); }
+  .searchbar-in { max-width: 1120px; margin: 0 auto; padding: 18px 24px; display: flex; gap: 10px; }
+  .searchbar input { flex: 1; font: 500 16px "Public Sans"; padding: 12px 14px; border: 1px solid #c4ced3; border-radius: 6px; }
+  .searchbar input:focus { outline: 2px solid var(--teal); border-color: var(--teal); }
+  .searchbar .loc { flex: 0 0 220px; }
+  .layout { max-width: 1120px; margin: 0 auto; padding: 22px 24px 60px; display: grid; grid-template-columns: 220px 1fr; gap: 28px; }
+  aside h4 { font-size: 12px; text-transform: uppercase; letter-spacing: .8px; color: var(--muted); margin: 0 0 8px; }
+  aside label { display: flex; gap: 8px; align-items: center; font-size: 14px; padding: 3px 0; cursor: pointer; }
+  aside .grp { margin-bottom: 22px; }
+  .count { font-size: 14px; color: var(--muted); margin: 0 0 10px; display: flex; justify-content: space-between; }
+  .job { background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; display: grid; grid-template-columns: 48px 1fr auto; gap: 14px; margin-bottom: 8px; }
+  .job:hover { border-color: #b9c6cc; }
+  .logo-sq { width: 48px; height: 48px; border-radius: 8px; display: grid; place-items: center; font: 800 16px "Public Sans"; color: #fff; }
+  .job h3 { margin: 0; font-size: 17px; font-weight: 700; }
   .job .meta { color: var(--muted); font-size: 14px; }
-  .job .tags span { display: inline-block; font: 600 12px "JetBrains Mono"; background: #e6f4f1; color: var(--sky); padding: 3px 8px; border-radius: 6px; margin: 6px 6px 0 0; }
-  .job .sal { font: 400 18px "Archivo Black"; text-align: right; }
-  .apply { font: 400 16px "Archivo Black"; background: var(--sky2); color: #fff; border: 0; border-radius: 10px; padding: 10px 20px; cursor: pointer; margin-top: 8px; }
-  .done { grid-column: 1 / -1; background: #e9f9f1; border: 2px solid var(--ok); border-radius: 12px; padding: 12px 14px; }
-  @media (max-width: 640px) { .job { grid-template-columns: 1fr; } .job .sal { text-align: left; } }
+  .job .tags { margin-top: 8px; }
+  .job .tags span { display: inline-block; font-size: 12px; font-weight: 600; background: var(--teal-l); color: var(--teal); padding: 2px 8px; border-radius: 4px; margin: 0 6px 4px 0; }
+  .job .side { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+  .job .sal { font-weight: 700; font-size: 15px; }
+  .job .age { font-size: 12px; color: var(--muted); }
+  .apply { font: 700 14px "Public Sans"; background: var(--teal); color: #fff; border: 0; border-radius: 6px; padding: 8px 16px; cursor: pointer; }
+  .apply:hover { background: #0a6658; }
+  .done { grid-column: 2 / -1; background: var(--teal-l); border-radius: 6px; padding: 10px 12px; font-size: 14px; }
+  @media (max-width: 760px) {
+    .layout { grid-template-columns: 1fr; } aside { display: none; } .top nav, .searchbar .loc { display: none; }
+    .job { grid-template-columns: 40px 1fr; } .job .side { grid-column: 2; align-items: flex-start; text-align: left; } .logo-sq { width: 40px; height: 40px; }
+    .done { grid-column: 1 / -1; }
+  }
 </style>
 </head>
 <body>
-  <header class="top"><a class="brand" href="/jobs">glen<span>hire</span></a><nav><span>Jobs</span><span>Companies</span><span>Salaries</span></nav></header>
-  <section class="hero" style="padding-bottom:40px"><h1>Tech jobs in Scotland</h1><p>Real people read every application. Apply in two minutes.</p></section>
-  <main class="wrap">
-    <div class="filter"><label for="q" class="sr" style="position:absolute;left:-9999px">Search jobs</label><input id="q" placeholder="Search by title, skill or company"></div>
-    <div id="list"></div>
-    <div class="agent-note"><span class="rc">⟲</span><span><b>Applying with an AI assistant?</b> Agents get a job feed and an application API. Their applications are labelled as AI-assisted, with a daily cap, so mass-apply bots can't drown out real candidates.</span></div>
-  </main>
+  <header class="top"><div class="top-in"><a class="brand" href="/jobs">glen<span>hire</span></a><nav><span>Find jobs</span><span>Companies</span><span>Salaries</span></nav><span class="post">Post a job</span></div></header>
+  <div class="searchbar"><div class="searchbar-in">
+    <label for="q" class="hidden">Search jobs</label><input id="q" placeholder="Job title, skill or company">
+    <input class="loc" value="Scotland" aria-label="Location" readonly>
+  </div></div>
+  <div class="layout">
+    <aside>
+      <div class="grp"><h4>Work mode</h4><div id="modes"></div></div>
+      <div class="grp"><h4>Posted</h4><label><input type="radio" name="age" checked> Any time</label><label><input type="radio" name="age"> Last 3 days</label><label><input type="radio" name="age"> Last week</label></div>
+    </aside>
+    <main>
+      <p class="count"><span id="count"></span><span>Sorted by: newest</span></p>
+      <div id="list"></div>
+      <div class="agent-note"><span class="rc">⟲</span><span><b>Applying with an AI assistant?</b> Agents get a job feed and an application API. Their applications are labelled as AI-assisted, with a daily cap, so mass-apply bots can't drown out real candidates.</span></div>
+    </main>
+  </div>
   <script src="/static/telemetry.js"></script>
   <script src="/static/lane.js"></script>
   <script>
@@ -37,23 +72,34 @@
     const jobs = await (await fetch("/api/sites/jobs/content")).json();
     const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
     const k = (n) => `£${Math.round(n / 1000)}k`;
+    const COLORS = ["#0d7c6c", "#2d5aa8", "#b4432f", "#6b4e8f", "#a7731b", "#2f6b3f"];
+    const initials = (s) => s.split(/\s+/).filter((w) => /^[A-Z]/.test(w)).slice(0, 2).map((w) => w[0]).join("") || s[0];
+    const modes = [...new Set(jobs.map((j) => j.mode))];
+    document.getElementById("modes").innerHTML = modes.map((m) => `<label><input type="checkbox" value="${esc(m)}" checked> ${esc(m)}</label>`).join("");
     const render = () => {
       const q = document.getElementById("q").value.toLowerCase();
-      document.getElementById("list").innerHTML = jobs.filter((j) => !q || JSON.stringify(j).toLowerCase().includes(q)).map((j) => `
-        <div class="job" id="job-${j.id}"><div><h3>${esc(j.title)}</h3><div class="meta">${esc(j.company)} · ${esc(j.location)} · ${esc(j.mode)}</div>
-          <div class="tags">${j.tags.map((t) => `<span>${esc(t)}</span>`).join("")}</div></div>
-          <div><div class="sal">${j.salary_gbp[0] === j.salary_gbp[1] ? k(j.salary_gbp[0]) : k(j.salary_gbp[0]) + "–" + k(j.salary_gbp[1])}</div>
-          <button class="apply" data-id="${j.id}">Easy apply →</button></div></div>`).join("");
+      const on = [...document.querySelectorAll("#modes input:checked")].map((x) => x.value);
+      const shown = jobs.filter((j) => (!q || JSON.stringify(j).toLowerCase().includes(q)) && on.includes(j.mode));
+      document.getElementById("count").textContent = `${shown.length} job${shown.length === 1 ? "" : "s"} in Scotland`;
+      document.getElementById("list").innerHTML = shown.map((j) => `
+        <div class="job" id="job-${j.id}">
+          <div class="logo-sq" style="background:${COLORS[jobs.indexOf(j) % COLORS.length]}">${esc(initials(j.company))}</div>
+          <div><h3>${esc(j.title)}</h3><div class="meta">${esc(j.company)}, ${esc(j.location)} (${esc(j.mode)})</div>
+            <div class="tags">${j.tags.map((t) => `<span>${esc(t)}</span>`).join("")}</div></div>
+          <div class="side"><div class="sal">${j.salary_gbp[0] === j.salary_gbp[1] ? k(j.salary_gbp[0]) : k(j.salary_gbp[0]) + "–" + k(j.salary_gbp[1])}</div>
+            <div class="age">Posted ${jobs.indexOf(j) + 1}d ago</div>
+            <button class="apply" data-id="${j.id}">Easy apply</button></div></div>`).join("");
       document.querySelectorAll(".apply").forEach((b) => b.addEventListener("click", async () => {
         const r = await RCRoute("jobs", { job: b.dataset.id });
         if (!r) return;
         const a = r.result.application;
         const card = document.getElementById("job-" + b.dataset.id);
         b.remove();
-        card.insertAdjacentHTML("beforeend", `<div class="done">✅ <b>Application started</b> for ${esc(a.job.title)} at ${esc(a.job.company)}, as a human candidate. ${esc(a.next)}</div>`);
+        card.insertAdjacentHTML("beforeend", `<div class="done"><b>Application started</b> for ${esc(a.job.title)} at ${esc(a.job.company)}, as a human candidate. ${esc(a.next)}</div>`);
       }));
     };
     document.getElementById("q").addEventListener("input", render);
+    document.getElementById("modes").addEventListener("change", render);
     render();
   })();
   </script>

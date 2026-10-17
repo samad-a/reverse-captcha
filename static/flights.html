@@ -4,37 +4,41 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Haarline: cheap flights from Scotland</title>
-<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Barlow:wght@400;600;700&family=Barlow+Condensed:ital,wght@0,700;1,800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/static/flights.css">
+<link rel="stylesheet" href="/static/demo.css">
 </head>
 <body>
   <header class="top">
     <a class="brand" href="/flights">haar<span>line</span></a>
     <nav><span>Flights</span><span>Hotels</span><span>Car hire</span><span>Explore</span></nav>
   </header>
-  <section class="hero">
-    <h1>Where to next?</h1>
-    <p>Search hundreds of airlines. No pop-ups, no puzzles. Agents get their own lane.</p>
-  </section>
+  <section class="hero"><div class="hero-in">
+    <h1><small>Edinburgh · Glasgow · Aberdeen</small>Seats from £19<sup>*</sup></h1>
+    <p>Low fares to 40 cities from Scotland. Pick a seat, bring a bag, go.</p>
+  </div></section>
 
-  <form class="search" id="searchForm" autocomplete="off">
+  <form class="search" id="searchForm" autocomplete="off"><div class="search-in">
     <div class="field"><label for="from">From</label><select id="from" name="from"></select></div>
     <div class="field"><label for="to">To</label><select id="to" name="to"></select></div>
     <div class="field"><label for="depart">Depart</label><input id="depart" name="depart" type="date"></div>
     <div class="field"><label for="ret">Return</label><input id="ret" name="return" type="date"></div>
-    <div class="field"><label for="pax">Travellers</label>
+    <div class="field"><label for="pax">Adults</label>
       <select id="pax" name="pax"><option>1</option><option>2</option><option>3</option><option>4</option></select></div>
-    <button id="searchBtn" type="submit">Search →</button>
-  </form>
+    <button id="searchBtn" type="submit">Search flights</button>
+  </div></form>
 
   <main class="wrap">
-    <div class="tiles">
-      <div class="tile"><b>Reykjavik from £89</b><small>Northern lights season · direct from EDI</small></div>
-      <div class="tile"><b>Barcelona from £54</b><small>Weekend escapes · 2h 40m</small></div>
-      <div class="tile"><b>Prague from £61</b><small>Christmas markets · from GLA</small></div>
-      <div class="tile"><b>New York from £279</b><small>Winter sale · 1 stop</small></div>
-    </div>
+    <div class="board-h"><h2>This week's lowest fares</h2><span>One way, per person</span></div>
+    <ul class="fares">
+      <li><div><b>Barcelona</b><div class="d">Edinburgh, Tue and Sat, 2h 40m</div></div><span class="code">HL 214</span><div class="pr"><small>from</small><strong>£54</strong></div></li>
+      <li><div><b>Prague</b><div class="d">Glasgow, Thu and Sun, 2h 25m</div></div><span class="code">HL 377</span><div class="pr"><small>from</small><strong>£61</strong></div></li>
+      <li><div><b>Reykjavik</b><div class="d">Edinburgh, daily until March, 2h 10m</div></div><span class="code">HL 902</span><div class="pr"><small>from</small><strong>£89</strong></div></li>
+      <li><div><b>New York JFK</b><div class="d">Edinburgh via Dublin, 1 stop</div></div><span class="code">HL 6</span><div class="pr"><small>from</small><strong>£279</strong></div></li>
+    </ul>
+    <p class="small-print">*£19 fares are one way on selected Tuesday and Wednesday flights, include one under-seat bag (40×30×20cm) and are
+      available until 23:59 Sunday. Cabin bags from £14, seat selection from £4. Fares shown were found in the last 48 hours.</p>
     <div class="agent-note"><span class="rc">⟲</span>
       <span><b>Protected by Reverse CAPTCHA.</b> Humans search as normal. Automated agents are routed to a dedicated agent lane
         (<code>/api/agents/search</code>), so bot traffic never slows down real travellers.</span></div>
