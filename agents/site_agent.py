@@ -20,6 +20,7 @@ from llm import ask_hedged, final_answer, model_name
 
 
 def click_centre(page, selector):
+    page.locator(selector).first.scroll_into_view_if_needed()
     b = page.locator(selector).first.bounding_box()
     x, y = b["x"] + b["width"] / 2, b["y"] + b["height"] / 2
     page.mouse.move(x, y, steps=4)

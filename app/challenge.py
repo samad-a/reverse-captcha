@@ -120,7 +120,7 @@ def generate(seed=None):
         n = r.randint(f["bags"] + 1, f["bags"] + 3)
         answer = float(f["price"] + (n - f["bags"]) * bag_fee)
         question = (f"What is the total cost (in £) of one {fare} fare from {origin} to {dest} travelling with "
-                    f"{n} checked bags?")
+                    f"{n} checked bags, paying by debit card?")
         working = f"{_fmt(f['price'])} + {n - f['bags']} extra bag(s) × {_fmt(bag_fee)}"
 
     # --- relevant clauses
