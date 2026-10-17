@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inkwell: review and sign</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/flights.css">
+<style>
+  :root { --sky: #2d1b4e; --sky2: #6b3fd4; --sun: #f6c445; }
+  .doc-card { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 28px 32px; max-height: 52vh; overflow-y: auto; font-family: Georgia, serif; line-height: 1.6; }
+  .doc-card h2 { font-family: Inter, sans-serif; margin-top: 0; }
+  .doc-card h4 { font-family: Inter, sans-serif; margin: 16px 0 2px; font-size: 14px; text-transform: uppercase; letter-spacing: .5px; color: var(--sky2); }
+  .doc-card p { margin: 0; }
+  .sign-row { display: flex; gap: 14px; align-items: center; flex-wrap: wrap; margin-top: 18px; background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 18px; }
+  .sign-row input[type=text] { font: italic 24px Georgia, serif; padding: 10px 14px; border: 0; border-bottom: 2px solid var(--ink); min-width: 260px; }
+  .sign-row label { display: flex; gap: 8px; align-items: center; font-weight: 600; }
+  #signBtn { font: 400 18px "Archivo Black"; background: var(--sky2); color: #fff; border: 0; border-radius: 12px; padding: 14px 28px; cursor: pointer; }
+  #signBtn:disabled { opacity: .5; cursor: not-allowed; }
+  .done { background: #e5f6ec; border: 2px solid var(--ok); border-radius: 16px; padding: 20px; margin-top: 18px; }
+  .done pre { background: #fff; padding: 12px; border-radius: 10px; font: 13px "JetBrains Mono"; overflow: auto; }
+</style>
+</head>
+<body>
+  <header class="top"><a class="brand" href="/contracts">ink<span>well</span></a><nav><span>Documents</span><span>Templates</span><span>Audit trail</span></nav></header>
+  <section class="hero" style="padding-bottom:40px"><h1>Review and sign</h1><p>Northlight Studio Ltd has sent you a document to sign.</p></section>
+  <main class="wrap">
+    <article class="doc-card" id="doc">Loading…</article>
+    <form class="sign-row" id="signForm" autocomplete="off">
+      <input type="text" id="name" placeholder="Type your full name" required>
+      <label><input type="checkbox" id="agree"> I have read and agree to this agreement</label>
+      <button id="signBtn" type="submit" disabled>Sign →</button>
+    </form>
+    <div id="done" class="done hidden"></div>
+    <div class="agent-note"><span class="rc">⟲</span><span><b>Signing for someone else?</b> AI agents are routed to a structured contract lane where delegated signatures are recorded as agent signatures, never passed off as human ones.</span></div>
+  </main>
+  <script src="/static/telemetry.js"></script>
+  <script src="/static/lane.js"></script>
+  <script>
+  (async () => {
+    const c = await (await fetch("/api/sites/contracts/content")).json();
+    document.getElementById("doc").innerHTML = `<h2>${c.title}</h2><p><i>${c.parties.join(" and ")} · Ref ${c.id}</i></p>` +
+      c.clauses.map((k) => `<h4>${k.n}. ${k.title}</h4><p>${k.text}</p>`).join("");
+    const btn = document.getElementById("signBtn"), agree = document.getElementById("agree"), name = document.getElementById("name");
+    const sync = () => { btn.disabled = !(agree.checked && name.value.trim()); };
+    agree.addEventListener("change", sync); name.addEventListener("input", sync);
+    document.getElementById("signForm").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const r = await RCRoute("contracts", { name: name.value.trim(), contract: c.id });
+      if (!r) return;
+      const s = r.result.signature;
+      document.getElementById("signForm").classList.add("hidden");
+      const d = document.getElementById("done");
+      d.classList.remove("hidden");
+      d.innerHTML = `<h3 style="margin-top:0">✅ Signed by ${s.signed_by}: human signature</h3>
+        <p>Recorded in the audit trail with evidence that a person reviewed it:</p><pre>${JSON.stringify(s, null, 2)}</pre>`;
+    });
+  })();
+  </script>
+</body>
+</html>

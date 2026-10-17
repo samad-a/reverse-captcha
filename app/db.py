@@ -22,17 +22,23 @@ CREATE TABLE IF NOT EXISTS routes (
 """)
 
 
-def add_route(lane, reason, query, robot_score=0, f=None):
+try:
+    _conn.execute("ALTER TABLE routes ADD COLUMN site TEXT DEFAULT 'flights'")
+except sqlite3.OperationalError:
+    pass  # column already exists
+
+
+def add_route(lane, reason, query, robot_score=0, f=None, site="flights"):
     with _lock:
-        _conn.execute("INSERT INTO routes (ts,lane,reason,query,robot_score,features) VALUES (?,?,?,?,?,?)",
-                      (time.time(), lane, reason, json.dumps(query), robot_score, json.dumps(f or {})))
+        _conn.execute("INSERT INTO routes (ts,lane,reason,query,robot_score,features,site) VALUES (?,?,?,?,?,?,?)",
+                      (time.time(), lane, reason, json.dumps(query), robot_score, json.dumps(f or {}), site))
         _conn.commit()
 
 
 def lanes():
     counts = {r["lane"]: r["c"] for r in _conn.execute(
         "SELECT lane, COUNT(*) c FROM routes WHERE archived=0 GROUP BY lane").fetchall()}
-    rows = _conn.execute("SELECT id, ts, lane, reason, query, robot_score FROM routes WHERE archived=0 "
+    rows = _conn.execute("SELECT id, ts, lane, reason, query, robot_score, site FROM routes WHERE archived=0 "
                          "ORDER BY id DESC LIMIT 8").fetchall()
     return {"human": counts.get("human", 0), "agent": counts.get("agent", 0),
             "recent": [{**dict(r), "query": json.loads(r["query"])} for r in rows]}

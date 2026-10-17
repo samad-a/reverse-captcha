@@ -9,7 +9,7 @@ from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import FileResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
-from . import challenge, classifier, config, db, features
+from . import challenge, classifier, config, db, features, sites
 
 STATIC = os.path.join(os.path.dirname(__file__), "..", "static")
 app = FastAPI(title="Reverse CAPTCHA")
@@ -150,21 +150,10 @@ async def route_search(req: Request):
     """Silent check when someone presses Search. No challenge: humans continue, obvious agents are rerouted."""
     body = await req.json()
     q = _query(body.get("query", {}))
-    f = features.compute(body.get("telemetry"))
-    robot_score, robot, human = classifier.behaviour(f)
-    if f["total_events"] == 0:
-        lane, why = "agent", "no interaction events at all"
-    elif f["webdriver"]:
-        lane, why = "agent", "navigator.webdriver = true"
-    elif robot_score >= config.ROUTE_AGENT_SCORE:
-        lane, why = "agent", "; ".join(robot[:2])
-    else:
-        lane, why = "human", "; ".join(human[:2]) or "nothing robotic"
-    if body.get("override") == "human":
-        lane, why = "human", "visitor said 'I'm human' (override)"
-    db.add_route(lane, why, q, robot_score, f)
+    lane, why, robot_score, reasons, f = sites.decide_lane(body.get("telemetry"), body.get("override"))
+    db.add_route(lane, why, q, robot_score, f, site="flights")
     qs = urlencode(q)
-    return {"lane": lane, "reason": why, "robot_score": robot_score, "reasons": robot if lane == "agent" else human,
+    return {"lane": lane, "reason": why, "robot_score": robot_score, "reasons": reasons,
             "redirect": f"/agents/search?{qs}" if lane == "agent" else f"/flights/results?{qs}"}
 
 
@@ -178,7 +167,7 @@ def flight_results(req: Request):
     no_browser = not req.headers.get("sec-fetch-mode") and not req.headers.get("sec-ch-ua")
     q = _query(req.query_params)
     if _SCRIPT_UA.search(ua) or no_browser:
-        db.add_route("agent", f"no browser ({ua[:40] or 'no user-agent'})", q)
+        db.add_route("agent", f"no browser ({ua[:40] or 'no user-agent'})", q, site="flights")
         return RedirectResponse(f"/api/agents/search?{urlencode(q)}", status_code=307,
                                 headers={"Link": '</api/agents/search>; rel="alternate"; type="application/json"'})
     return FileResponse(os.path.join(STATIC, "results.html"), headers={"Cache-Control": "no-store"})
@@ -207,3 +196,63 @@ def agent_search(req: Request):
 @app.get("/api/airports")
 def airports():
     return AIRPORTS
+
+
+# ---- More demo sites: contract signing, event ticketing, online shopping ---------------------------------------
+DEMO_SITES = ("contracts", "tickets", "shop")
+
+
+@app.get("/sites")
+def sites_hub():
+    return FileResponse(os.path.join(STATIC, "sites.html"), headers={"Cache-Control": "no-store"})
+
+
+@app.get("/contracts")
+@app.get("/tickets")
+@app.get("/shop")
+def site_page(req: Request):
+    return FileResponse(os.path.join(STATIC, req.url.path.strip("/") + ".html"), headers={"Cache-Control": "no-store"})
+
+
+@app.post("/api/route/{site}")
+async def route_site(site: str, req: Request):
+    if site not in DEMO_SITES:
+        raise HTTPException(404, "unknown site")
+    body = await req.json()
+    q = {k: str(v)[:60] for k, v in (body.get("query") or {}).items()}
+    lane, why, robot_score, reasons, f = sites.decide_lane(body.get("telemetry"), body.get("override"))
+    db.add_route(lane, why, q, robot_score, f, site=site)
+    out = {"lane": lane, "reason": why, "robot_score": robot_score, "reasons": reasons}
+    if lane == "agent":
+        out["redirect"] = f"/agents/{site}?{urlencode(q)}"
+    else:
+        out["result"] = sites.human_result(site, q, f)
+    return out
+
+
+@app.get("/agents/{site}")
+def site_agent_lane(site: str):
+    if site not in DEMO_SITES:
+        raise HTTPException(404, "unknown site")
+    return FileResponse(os.path.join(STATIC, "agent_lane.html"), headers={"Cache-Control": "no-store"})
+
+
+@app.get("/api/agents/{site}")
+def site_agent_api(site: str, req: Request):
+    if site not in DEMO_SITES:
+        raise HTTPException(404, "unknown site")
+    return {**sites.agent_payload(site, dict(req.query_params)), "query": dict(req.query_params),
+            "schema_version": "1.0"}
+
+
+@app.post("/api/agents/{site}/{action}")
+async def site_agent_action(site: str, action: str, req: Request):
+    from fastapi.responses import JSONResponse
+    status, body = sites.agent_action(site, await req.json())
+    return JSONResponse(body, status_code=status)
+
+
+@app.get("/api/sites/{site}/content")
+def site_content(site: str):
+    """Public content the human pages render (contract text, event, product)."""
+    return {"contracts": sites.CONTRACT, "tickets": sites.EVENT, "shop": sites.PRODUCT}.get(site) or {}

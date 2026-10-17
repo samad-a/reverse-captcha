@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Gigabox: tickets</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/flights.css">
+<style>
+  :root { --sky: #12001f; --sky2: #c2185b; --sun: #00e5c3; }
+  body { background: #faf7fb; }
+  .hero { background: radial-gradient(circle at 20% 20%, #c2185b 0%, #4a0e4e 45%, #12001f 100%); }
+  .event-card { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .tier { background: #fff; border: 2px solid var(--line); border-radius: 14px; padding: 16px 18px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; margin-bottom: 10px; }
+  .tier.sel { border-color: var(--sky2); box-shadow: 0 0 0 3px #c2185b33; }
+  .tier b { font-size: 18px; } .tier .p { font: 400 22px "Archivo Black"; }
+  .tier small { color: var(--muted); display: block; }
+  .buy { background: #fff; border-radius: 16px; border: 1px solid var(--line); padding: 20px; align-self: start; }
+  .buy select { font: 600 16px Inter; padding: 10px; border: 2px solid var(--line); border-radius: 10px; }
+  #buyBtn { font: 400 20px "Archivo Black"; background: var(--sky2); color: #fff; border: 0; border-radius: 12px; padding: 14px 28px; cursor: pointer; width: 100%; margin-top: 14px; }
+  .done { background: #e9fff9; border: 2px solid #00b89c; border-radius: 16px; padding: 18px; margin-top: 14px; }
+  @media (max-width: 760px) { .event-card { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+  <header class="top"><a class="brand" href="/tickets">giga<span>box</span></a><nav><span>Music</span><span>Comedy</span><span>Sport</span></nav></header>
+  <section class="hero" style="padding-bottom:40px"><h1 id="ev">Loading…</h1><p id="evsub"></p></section>
+  <main class="wrap">
+    <div class="event-card">
+      <div id="tiers"></div>
+      <div class="buy">
+        <label for="qty"><b>Tickets</b></label>
+        <select id="qty"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select>
+        <p id="total" style="font:400 26px 'Archivo Black';margin:12px 0 0"></p>
+        <button id="buyBtn">Get tickets →</button>
+        <div id="done" class="done hidden"></div>
+      </div>
+    </div>
+    <div class="agent-note"><span class="rc">⟲</span><span><b>Fans first.</b> Ticket bots and AI agents get a separate agent queue with a 2-ticket quota per real person, so they can't crowd out fans.</span></div>
+  </main>
+  <script src="/static/telemetry.js"></script>
+  <script src="/static/lane.js"></script>
+  <script>
+  (async () => {
+    const e = await (await fetch("/api/sites/tickets/content")).json();
+    document.getElementById("ev").textContent = e.name;
+    document.getElementById("evsub").textContent = `${e.venue} · ${new Date(e.date).toLocaleString("en-GB", { dateStyle: "full", timeStyle: "short" })}`;
+    let sel = e.tiers[0];
+    const render = () => {
+      document.getElementById("tiers").innerHTML = e.tiers.map((t, i) => `<div class="tier ${t === sel ? "sel" : ""}" data-i="${i}">
+        <div><b>${t.tier}</b><small>${t.available} left</small></div><div class="p">£${t.price_gbp}</div></div>`).join("");
+      document.querySelectorAll(".tier").forEach((el) => el.addEventListener("click", () => { sel = e.tiers[+el.dataset.i]; render(); }));
+      document.getElementById("total").textContent = `£${sel.price_gbp * +document.getElementById("qty").value}`;
+    };
+    document.getElementById("qty").addEventListener("change", render);
+    render();
+    document.getElementById("buyBtn").addEventListener("click", async () => {
+      const r = await RCRoute("tickets", { event: e.id, tier: sel.tier, qty: document.getElementById("qty").value });
+      if (!r) return;
+      const d = document.getElementById("done");
+      d.classList.remove("hidden");
+      d.innerHTML = `<b>🎟️ You're in the fan queue: position #${r.result.queue_position}</b><br>${r.result.qty} × ${r.result.tier} held for ${r.result.hold_minutes} minutes. (Demo: no payment.)`;
+    });
+  })();
+  </script>
+</body>
+</html>

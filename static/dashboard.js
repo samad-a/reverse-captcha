@@ -13,14 +13,21 @@
   };
   const ago = (ts) => { const s = Math.round(Date.now() / 1000 - ts); return s < 60 ? `${s}s ago` : `${Math.round(s / 60)}m ago`; };
 
+  const SITE_ICON = { flights: "✈️", contracts: "✍️", tickets: "🎟️", shop: "👟" };
+  const siteLabel = (r) => {
+    const q = r.query || {}, s = r.site || "flights";
+    const what = s === "flights" ? `${q.from} → ${q.to}` : s === "contracts" ? "sign contract" : s === "tickets" ? `${q.qty || ""}× ${q.tier || "tickets"}` : `size ${q.size || "?"}`;
+    return `${SITE_ICON[s] || ""} ${esc(what)}`;
+  };
+
   function renderLanes(L) {
     if (!L) return;
     $("laneH").textContent = L.human; $("laneA").textContent = L.agent;
     const tot = L.human + L.agent || 1;
     $("splitH").style.width = `${100 * L.human / tot}%`; $("splitA").style.width = `${100 * L.agent / tot}%`;
     $("routes").innerHTML = L.recent.length ? L.recent.map((r) => `<li><span class="chip ${r.lane === "agent" ? "SCRAPER" : "HUMAN"}">${r.lane === "agent" ? "REROUTED" : "HUMAN"}</span>
-      <span>${esc(r.query.from)} → ${esc(r.query.to)}</span><span class="why">${esc(r.reason)}</span></li>`).join("")
-      : `<li class="empty">No searches yet. Try /flights</li>`;
+      <span>${siteLabel(r)}</span><span class="why">${esc(r.reason)}</span></li>`).join("")
+      : `<li class="empty">No traffic yet. Try /sites</li>`;
   }
 
   function render(d) {

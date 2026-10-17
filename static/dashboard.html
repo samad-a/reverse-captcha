@@ -53,7 +53,7 @@
   .lane-split { height: 16px; border-radius: 8px; overflow: hidden; display: flex; border: 2px solid var(--ink); margin-bottom: 8px; }
   .lane-split i { display: block; transition: width .6s; } .lane-split .h { background: var(--green); } .lane-split .a { background: var(--red); }
   .routes { list-style: none; margin: 0; padding: 0; font-size: 15px; }
-  .routes li { display: grid; grid-template-columns: 96px 110px 1fr; gap: 10px; padding: 4px 0; border-bottom: 2px dashed #0002; }
+  .routes li { display: grid; grid-template-columns: 96px 150px 1fr; gap: 10px; padding: 4px 0; border-bottom: 2px dashed #0002; }
   @media (max-width: 900px) { .lanes-panel { grid-template-columns: 1fr; } }
   body.demo .panel { font-size: 1.1em; }
   @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } .meter-panel { grid-row: auto; } .feed li { grid-template-columns: 120px 44px 1fr; } }
@@ -95,10 +95,10 @@
       <div id="impWrap" class="hidden"><h2 style="margin-top:18px">What the model looks at</h2><div id="imp"></div></div>
     </section>
     <section class="panel lanes-panel">
-      <div><h2>✈️ Flight search lanes</h2>
+      <div><h2>🚦 Human vs agent lanes</h2>
         <div class="lane-counts"><div class="lane-box h">human lane<b id="laneH">0</b></div><div class="lane-box a">agent lane<b id="laneA">0</b></div></div></div>
       <div><div class="lane-split"><i class="h" id="splitH" style="width:50%"></i><i class="a" id="splitA" style="width:50%"></i></div>
-        <ul class="routes" id="routes"><li class="empty">No searches yet. Try /flights</li></ul></div>
+        <ul class="routes" id="routes"><li class="empty">No traffic yet. Try /sites</li></ul></div>
     </section>
   </div>
   <script src="/static/dashboard.js"></script>

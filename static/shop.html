@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Thistle &amp; Thread: limited drop</title>
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/static/flights.css">
+<style>
+  :root { --sky: #1d3b2a; --sky2: #2e7d4f; --sun: #ff7a1a; }
+  body { background: #f7f5f0; }
+  .pdp { display: grid; grid-template-columns: 1.1fr 1fr; gap: 32px; align-items: start; }
+  .shot { background: linear-gradient(135deg, #ffe4cc, #ffd0a8); border-radius: 24px; aspect-ratio: 1; display: grid; place-items: center; font-size: clamp(120px, 20vw, 220px); }
+  .badge { display: inline-block; background: var(--sun); color: #fff; font: 700 12px Inter; padding: 4px 10px; border-radius: 99px; letter-spacing: .5px; }
+  .pdp h1 { font: 400 clamp(28px, 4vw, 42px) "Archivo Black"; margin: 10px 0 4px; }
+  .price { font: 400 30px "Archivo Black"; margin: 6px 0 18px; }
+  .sizes { display: flex; gap: 8px; flex-wrap: wrap; }
+  .sizes button { font: 700 16px Inter; width: 58px; height: 48px; border: 2px solid var(--line); border-radius: 10px; background: #fff; cursor: pointer; }
+  .sizes button.sel { border-color: var(--ink); background: var(--ink); color: #fff; }
+  .sizes button:disabled { opacity: .35; text-decoration: line-through; cursor: not-allowed; }
+  #addBtn { font: 400 20px "Archivo Black"; background: var(--sky); color: #fff; border: 0; border-radius: 12px; padding: 16px; cursor: pointer; width: 100%; margin-top: 18px; }
+  .done { background: #fff; border: 2px solid var(--sky2); border-radius: 16px; padding: 18px; margin-top: 14px; }
+  .stock { color: var(--muted); font-size: 14px; margin-top: 8px; }
+  @media (max-width: 760px) { .pdp { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+  <header class="top"><a class="brand" href="/shop">thistle<span>&amp;</span>thread</a><nav><span>New in</span><span>Footwear</span><span>Drops</span></nav></header>
+  <main class="wrap">
+    <div class="pdp">
+      <div class="shot">👟</div>
+      <div>
+        <span class="badge">LIMITED DROP</span>
+        <h1 id="pname">Loading…</h1>
+        <div class="price" id="pprice"></div>
+        <b>Select size (UK)</b>
+        <div class="sizes" id="sizes"></div>
+        <div class="stock" id="stock"></div>
+        <button id="addBtn">Add to basket</button>
+        <div id="done" class="done hidden"></div>
+        <p class="stock" id="delivery"></p>
+      </div>
+    </div>
+    <div class="agent-note"><span class="rc">⟲</span><span><b>Shopping with an AI assistant?</b> Agents get a product feed and checkout API, with drop limits per real customer. Sneaker bots don't get to empty the shelves.</span></div>
+  </main>
+  <script src="/static/telemetry.js"></script>
+  <script src="/static/lane.js"></script>
+  <script>
+  (async () => {
+    const p = await (await fetch("/api/sites/shop/content")).json();
+    document.getElementById("pname").textContent = p.name;
+    document.getElementById("pprice").textContent = `£${p.price_gbp}`;
+    document.getElementById("delivery").textContent = `Free delivery in ${p.delivery[0].days} days · Returns: ${p.returns}`;
+    let size = null;
+    const render = () => {
+      document.getElementById("sizes").innerHTML = Object.entries(p.sizes).map(([s, n]) =>
+        `<button data-s="${s}" class="${s === size ? "sel" : ""}" ${n ? "" : "disabled"}>${s}</button>`).join("");
+      document.querySelectorAll(".sizes button").forEach((b) => b.addEventListener("click", () => { size = b.dataset.s; render(); }));
+      document.getElementById("stock").textContent = size ? `${p.sizes[size]} left in size ${size}` : "Pick a size";
+    };
+    render();
+    document.getElementById("addBtn").addEventListener("click", async () => {
+      if (!size) { document.getElementById("stock").textContent = "Please choose a size first"; return; }
+      const r = await RCRoute("shop", { sku: p.sku, size });
+      if (!r) return;
+      const it = r.result.basket[0];
+      const d = document.getElementById("done");
+      d.classList.remove("hidden");
+      d.innerHTML = `<b>🛒 Added to basket:</b> ${it.name}, size ${it.size}: £${it.price_gbp}<br><small>Checkout is not part of this demo.</small>`;
+    });
+  })();
+  </script>
+</body>
+</html>
