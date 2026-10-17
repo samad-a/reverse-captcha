@@ -10,6 +10,7 @@ import time
 sys.path.insert(0, os.path.dirname(__file__))
 from playwright.sync_api import sync_playwright  # noqa: E402
 
+from browser import launch
 from llm import ask_hedged, final_answer, model_name  # noqa: E402
 from app import config  # noqa: E402
 
@@ -47,7 +48,7 @@ def main():
     args = ap.parse_args()
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=args.headless)
+        browser = launch(p, args.headless)
         # tall viewport so the whole document is rendered on screen at once
         page = browser.new_page(viewport={"width": 1100, "height": 7600})
         page.goto(args.url + "/?label=VISION%20AGENT")

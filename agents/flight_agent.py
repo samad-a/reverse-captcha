@@ -9,6 +9,7 @@ import time
 
 from playwright.sync_api import sync_playwright
 
+from browser import launch
 from llm import ask_hedged, final_answer, model_name
 
 
@@ -30,7 +31,7 @@ def main():
     args = ap.parse_args()
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=args.headless)
+        browser = launch(p, args.headless)
         page = browser.new_page(viewport={"width": 1280, "height": 860})
         page.goto(args.url + "/flights")
         page.wait_for_selector("#from option", state="attached")
