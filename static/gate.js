@@ -37,10 +37,12 @@
       box.className = "tick no";
       checkResult = r;
       $("checkStatus").innerHTML = "<b>Hmm. That felt human.</b>";
+      $("landing").classList.add("shake");
       setTimeout(() => {
         $("pickerWhy").textContent = r.reasons.length ? `Detected: ${r.reasons.slice(0, 3).join(", ")}.` : "Detected: general carbon-based vibes.";
         $("landing").classList.add("hidden");
         $("picker").classList.remove("hidden");
+        $("picker").classList.add("deal");
         scrollTo(0, 0);
       }, 700);
     }
@@ -103,6 +105,7 @@
     $("challenge").classList.add("hidden");
     const el = $("result");
     el.classList.remove("hidden");
+    el.classList.add(v.passed ? "flip" : "deal");
     const r = v.reasons;
     const meter = `<div class="meterbar"><i style="left:0%"></i></div><div class="meter-ends"><span>HUMAN</span><span>MACHINE</span></div>`;
     const pills = `<div class="score-row">
