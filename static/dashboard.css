@@ -1,21 +1,21 @@
 /* Projector dashboard: meter, recent attempts, Hall of Humans, lanes. Builds on style.css.
    Wide screens get one fixed 16:9-friendly screen (no scrolling on the projector); narrow screens stack. */
-body.dash { background: var(--ink); color: #fff; --gap: clamp(12px, 1.4vw, 20px); }
-.dash-head { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px var(--gap); flex-wrap: wrap; }
-.dash-head .logo { font-size: clamp(22px, 2.6vw, 36px); text-shadow: 3px 3px 0 #000; }
+body.dash { background: var(--red); color: #fff; --gap: clamp(14px, 1.6vw, 24px); }
+.dash-head { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px var(--gap); flex-wrap: wrap; }
+.dash-head .logo { font-size: clamp(22px, 2.6vw, 36px); text-shadow: 3px 3px 0 var(--ink); }
 .dash-head .logo small { font: 700 .38em "JetBrains Mono"; color: var(--ink); background: var(--yellow); text-shadow: none; padding: 2px 8px; border-radius: 6px; vertical-align: middle; letter-spacing: 1px; text-transform: uppercase; }
 .head-right { display: flex; align-items: center; gap: 16px; }
-.live { font: 700 14px "JetBrains Mono"; color: #fffc; }
-.live::before { content: "●"; color: var(--red); margin-right: 6px; animation: blink 1s infinite; }
+.live { font: 700 14px "JetBrains Mono"; color: #fff; }
+.live::before { content: "●"; color: var(--yellow); margin-right: 6px; animation: blink 1s infinite; }
 @keyframes blink { 50% { opacity: .2; } }
-.ctrl button { font: 700 13px Inter; background: transparent; color: #fffa; border: 2px solid #fff4; border-radius: 10px; padding: 6px 12px; cursor: pointer; }
-.ctrl button:hover { color: #fff; border-color: #fff; }
+.ctrl button { font: 400 13px "Archivo Black"; background: transparent; color: #fff; border: 3px solid #fff; border-radius: 10px; padding: 6px 12px; cursor: pointer; }
+.ctrl button:hover { background: #fff; color: var(--red); }
 
-.grid { display: grid; gap: var(--gap); padding: 0 var(--gap) var(--gap);
+.grid { position: relative; z-index: 1; display: grid; gap: var(--gap); padding: 0 var(--gap) var(--gap);
   grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1fr);
   grid-template-rows: minmax(0, 1fr) auto;
   grid-template-areas: "meter feed hall" "meter lanes lanes"; }
-.panel { background: var(--paper); color: var(--ink); border-radius: 18px; padding: clamp(14px, 1.4vw, 22px); box-shadow: 6px 6px 0 var(--red); min-width: 0; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
+.panel { background: var(--paper); color: var(--ink); border-radius: 18px; padding: clamp(14px, 1.4vw, 22px); border: 4px solid var(--ink); box-shadow: 8px 8px 0 var(--ink); min-width: 0; min-height: 0; display: flex; flex-direction: column; overflow: hidden; }
 .panel h2 { font: 400 clamp(15px, 1.25vw, 20px) "Archivo Black"; margin: 0 0 12px; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: baseline; gap: 10px; }
 .panel h2 .hint { font: 600 clamp(11px, .7vw, 14px) Inter; text-transform: none; letter-spacing: 0; color: var(--muted); }
 .meter-panel { grid-area: meter; text-align: center; }
