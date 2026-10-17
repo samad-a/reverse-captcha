@@ -5,6 +5,10 @@
   const params = new URLSearchParams(location.search);
   if (params.get("demo")) document.body.classList.add("demo");
   let lastId = null, lastSig = "";
+  // Only rows we haven't drawn before get the "new" animation, so the room sees exactly what just happened.
+  const seen = { feed: new Set(), hall: new Set(), routes: new Set() };
+  let primed = false;
+  const fresh = (kind, id) => { const n = primed && !seen[kind].has(id); seen[kind].add(id); return n ? " new" : ""; };
 
   const topReasons = (v, n) => {
     const r = v.reasons || {};
@@ -25,8 +29,8 @@
     $("laneH").textContent = L.human; $("laneA").textContent = L.agent;
     const tot = L.human + L.agent || 1;
     $("splitH").style.width = `${100 * L.human / tot}%`; $("splitA").style.width = `${100 * L.agent / tot}%`;
-    $("routes").innerHTML = L.recent.length ? L.recent.map((r) => `<li><span class="chip ${r.lane === "agent" ? "SCRAPER" : "HUMAN"}">${r.lane === "agent" ? "REROUTED" : "HUMAN"}</span>
-      <span>${siteLabel(r)}</span><span class="why">${esc(r.reason)}</span></li>`).join("")
+    $("routes").innerHTML = L.recent.length ? L.recent.map((r) => `<li class="${fresh("routes", r.id)}"><span class="chip ${r.lane === "agent" ? "SCRAPER" : "HUMAN"}">${r.lane === "agent" ? "REROUTED" : "HUMAN"}</span>
+      <span>${siteLabel(r)}</span><span class="why" title="${esc(r.reason)}">${esc(r.reason)}</span></li>`).join("")
       : `<li class="empty">No traffic yet. Try /sites</li>`;
   }
 
@@ -52,14 +56,18 @@
     if (sig === lastSig) return renderImp(d);
     lastSig = sig;
     $("feed").innerHTML = d.recent.length ? d.recent.map((a) => `
-      <li><span class="chip ${cls(a.label)}">${esc(a.label === "UNCERTAIN" ? "UNSURE" : a.label)}</span>
-      <span class="score">${a.machine_score}</span>
-      <span class="why">${esc(a.name ? a.name + ": " : "")}${esc(topReasons(a.verdict, 2).join(" · "))}</span></li>`).join("")
+      <li class="c-${cls(a.label)}${fresh("feed", a.id)}" title="${esc(topReasons(a.verdict, 4).join("\n"))}">
+        <span><span class="lbl">${esc(a.label === "UNCERTAIN" ? `UNSURE (${a.likely || "?"})` : a.label)}</span>
+          <span class="nm">${esc(a.name || (a.verdict.via === "checkbox" ? "ticked the box" : `${a.elapsed.toFixed(1)}s on the challenge`))}</span></span>
+        <span class="score">${a.machine_score}<small>/100</small></span></li>`).join("")
       : `<li class="empty">No one yet. Go on, try it.</li>`;
     $("hall").innerHTML = d.hall.length ? d.hall.map((a) => `
-      <li><span class="nm">${esc(a.name)}</span><span class="st">${a.verdict.via === "checkbox" ? esc((a.verdict.reasons.human || [])[0] || "ticked the box like a human") : (a.correct ? "✓ correct but" : a.given == null ? "no answer," : "off by £" + Math.abs(a.given - a.expected).toFixed(2) + ",") + " " + a.elapsed.toFixed(1) + "s"}</span></li>`).join("")
+      <li class="${fresh("hall", a.id)}"><span class="nm">${esc(a.name)}</span><span class="st">${a.verdict.via === "checkbox" ? esc((a.verdict.reasons.human || [])[0] || "ticked the box like a human") : (a.correct ? "✓ correct but" : a.given == null ? "no answer," : "off by £" + Math.abs(a.given - a.expected).toFixed(2) + ",") + " " + a.elapsed.toFixed(1) + "s"}</span></li>`).join("")
       : `<li class="empty">Nobody has admitted to being human yet.</li>`;
-    $("counts").innerHTML = Object.entries(d.stats).map(([k, n]) => `<span class="chip ${cls(k)}">${esc(k)} × ${n}</span>`).join("");
+    const tot = Object.values(d.stats).reduce((x, y) => x + y, 0) || 1;
+    $("stack").innerHTML = Object.entries(d.stats).map(([k, n]) => `<i class="c-${cls(k)}" style="width:${100 * n / tot}%" title="${esc(k)}: ${n}"></i>`).join("");
+    $("counts").innerHTML = Object.entries(d.stats).map(([k, n]) => `<div class="c-${cls(k)}"><b>${n}</b><span>${esc(k === "UNCERTAIN" ? "unsure" : k.toLowerCase())}</span></div>`).join("");
+    primed = true;
     renderImp(d);
   }
 
