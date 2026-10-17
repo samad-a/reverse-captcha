@@ -51,13 +51,6 @@ a { color: var(--navy2); }
 .flight .p small { display: block; font: 600 11px Barlow, sans-serif; color: var(--muted); text-transform: uppercase; letter-spacing: .5px; margin-top: 3px; }
 .flight button { font: italic 800 18px "Barlow Condensed", sans-serif; text-transform: uppercase; background: var(--navy); color: #fff; border: 0; border-radius: 3px; padding: 10px 20px; cursor: pointer; }
 
-/* agent lane */
-.agent-hero { background: #111; color: #fff; padding: 36px 24px; }
-.agent-hero h1 { font: 400 clamp(28px, 5vw, 48px) "Archivo Black"; margin: 0 auto 6px; max-width: 1080px; color: #ff6b5e; }
-.agent-hero p { max-width: 1080px; margin: 0 auto; opacity: .85; }
-.why-list { margin: 10px 0 0; padding-left: 20px; }
-pre.json { background: #0f1420; color: #9ef09e; padding: 18px; border-radius: 14px; overflow: auto; max-height: 60vh; font: 13px/1.45 "JetBrains Mono", monospace; }
-.back { display: inline-block; margin-top: 14px; font-weight: 700; }
 @media (max-width: 860px) {
   .search-in { grid-template-columns: 1fr 1fr; }
   #searchBtn { grid-column: 1 / -1; padding: 12px; }

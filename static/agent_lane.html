@@ -6,42 +6,128 @@
 <title>Agent lane</title>
 <link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link rel="icon" href="/static/favicon.svg" type="image/svg+xml">
-<link rel="stylesheet" href="/static/flights.css">
+<link rel="stylesheet" href="/static/style.css">
+<style>
+  .lane-head { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; position: relative; z-index: 1; max-width: 980px; margin: 0 auto; padding: 22px 16px 6px; color: #fff; }
+  .lane-head .logo { font-size: clamp(22px, 3.4vw, 34px); }
+  .lane-head .logo small { font: 700 .45em "JetBrains Mono"; color: #fff; text-shadow: none; margin-left: 6px; letter-spacing: 0; }
+  main.lane { max-width: 980px; display: grid; gap: 22px; }
+  main.lane > * { min-width: 0; }
+  a.big-btn { text-decoration: none; display: inline-block; }
+  .site-chip { display: inline-block; font: 700 13px "JetBrains Mono"; background: var(--ink); color: var(--yellow); padding: 5px 12px; border-radius: 999px; }
+  .lane h1 { margin: 14px 0 10px; font-size: clamp(30px, 5vw, 54px); }
+  .lane h2 { font: 400 22px "Archivo Black"; margin: 0 0 12px; }
+  .why-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 0; padding: 0; list-style: none; }
+  .why-chips li { font: 600 14px Inter; background: #fff; border: 2px solid var(--ink); border-radius: 999px; padding: 5px 12px; }
+  .why-chips li::before { content: "⚑ "; color: var(--red); }
+  .rules { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; }
+  .rule { background: #fff; border: 3px solid var(--ink); border-radius: 16px; padding: 12px 14px; box-shadow: 4px 4px 0 var(--ink); }
+  .rule b { display: block; font: 400 30px/1.1 "Archivo Black"; color: var(--blue); }
+  .rule span { font-weight: 600; font-size: 14px; }
+  .endpoint { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 18px; font: 700 15px "JetBrains Mono"; }
+  .verb { background: var(--green); color: #fff; padding: 3px 10px; border-radius: 8px; }
+  .verb.get { background: var(--blue); }
+  .req { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
+  .req code { font: 600 13px "JetBrains Mono"; background: #fff3b0; border: 2px solid var(--ink); border-radius: 8px; padding: 2px 8px; }
+  details.json-wrap { margin-top: 18px; }
+  details.json-wrap summary { cursor: pointer; font: 400 18px "Archivo Black"; list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  details.json-wrap summary::before { content: "▸"; margin-right: 6px; transition: transform .15s; display: inline-block; }
+  details[open].json-wrap summary::before { transform: rotate(90deg); }
+  details.json-wrap summary span { flex: 1; }
+  .copy { font: 700 13px Inter; background: #fff; border: 2px solid var(--ink); border-radius: 10px; padding: 6px 12px; cursor: pointer; }
+  .copy:hover { background: var(--yellow); }
+  pre.json { max-height: 56vh; margin: 10px 0 0; font-size: 13px; color: #e6e6e6; background: #15161c; }
+  pre.json .k { color: #7fc8ff; } pre.json .s { color: #b6f09c; } pre.json .n { color: #ffcf6b; } pre.json .b { color: #ff8fb1; }
+  .human-out { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .human-out p { margin: 0; font-weight: 600; max-width: 520px; }
+</style>
 </head>
-<body>
-  <section class="agent-hero">
-    <h1 id="h1">⟲ Agent lane</h1>
-    <p id="msg">You were rerouted here because you look like an AI agent. Same service, structured JSON, no UI, and none of the load on the human site.</p>
-    <ul class="why-list" id="why"></ul>
-  </section>
-  <main class="wrap">
-    <div class="summary"><h2>GET <span id="endpoint" style="font-family:'JetBrains Mono';font-size:18px"></span></h2><span class="lane-pill agent">AGENT LANE</span></div>
-    <pre class="json" id="json">loading…</pre>
-    <a class="back" id="back" href="#">I'm human, take me back to the normal site →</a>
+<body class="gate">
+  <div class="bg-cards" aria-hidden="true"><span>⟲</span><span>⟳</span><span>⟲</span><span>⟳</span></div>
+  <header class="lane-head">
+    <div class="logo"><span class="rev">⟲</span> REVERSE<b>CAPTCHA</b><small>agent lane</small></div>
+    <a class="big-btn small yellow" id="backTop" href="#">I'm human</a>
+  </header>
+  <main class="lane">
+    <section class="card">
+      <span class="site-chip" id="siteChip">…</span>
+      <h1>You've been routed to the <em>agent lane</em>.</h1>
+      <p class="lede" id="msg">Same service, structured JSON, no UI, and none of the load on the human site.</p>
+      <ul class="why-chips" id="why"></ul>
+    </section>
+
+    <section class="card">
+      <h2>House rules for agents</h2>
+      <div class="rules" id="rules"></div>
+      <div class="endpoint" id="action"></div>
+      <div class="req" id="requires"></div>
+
+      <details class="json-wrap" open>
+        <summary><span>GET <span id="endpoint" style="font-family:'JetBrains Mono';font-size:15px"></span></span>
+          <button class="copy" id="copyCurl" type="button">Copy as curl</button><button class="copy" id="copyJson" type="button">Copy JSON</button></summary>
+        <pre class="json" id="json">loading…</pre>
+      </details>
+    </section>
+
+    <section class="card human-out">
+      <p>Got here by mistake? False positives should never block a person. One click puts you back on the normal site.</p>
+      <a class="big-btn small" id="back" href="#">I'm human, take me back</a>
+    </section>
   </main>
   <script>
   (async () => {
+    const $ = (id) => document.getElementById(id);
+    const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
     const site = location.pathname.split("/")[2];           // "search" = flights
     const qs = location.search, url = `/api/agents/${site}` + qs;
-    document.getElementById("endpoint").textContent = url;
+    // What each site lets agents do, and the limits that keep them from crowding out people.
+    const LANES = {
+      search: { name: "Haarline", rules: [["600", "requests per minute"], ["1 principal", "per seat hold"], ["Human", "confirms payment"]],
+        action: ["POST", "each flight's book link"], requires: ["principal"] },
+      contracts: { name: "Inkwell", rules: [["On behalf of", "a named principal"], ["All flags", "must be acknowledged"], ["High risk", "needs a human countersign"], ["Agent", "signature, never a human one"]],
+        action: ["POST", "/api/agents/contracts/sign"], requires: ["principal", "agent_id", "contract_hash", "acknowledged_flags"] },
+      tickets: { name: "Gigabox", rules: [["2", "tickets per principal"], ["10%", "of each tier for agents"], ["Behind", "the fan queue, never ahead"], ["Named", "non-transferable tickets"]],
+        action: ["POST", "/api/agents/tickets/reserve"], requires: ["principal", "tier", "qty"] },
+      shop: { name: "Thistle & Thread", rules: [["1 pair", "per principal during the drop"], ["API", "checkout, no basket scraping"]],
+        action: ["POST", "/api/agents/shop/order"], requires: ["principal", "size", "delivery"] },
+      jobs: { name: "Glenhire", rules: [["3", "applications per candidate per day"], ["AI-assisted", "label shown to employers"], ["Candidate", "must confirm each one"]],
+        action: ["POST", "/api/agents/jobs/apply"], requires: ["principal", "job_id", "cover_note", "candidate_confirmed"] },
+      news: { name: "The Haar Herald", rules: [["3", "free articles per principal"], ["£0.01", "per article after that"], ["Credit", "attribution required"], ["No", "AI training use"]],
+        action: ["POST", "/api/agents/news/license"], requires: ["principal", "article_id", "accept_terms"] },
+    };
+    const lane = LANES[site] || { name: site, rules: [], requires: [] };
+    $("endpoint").textContent = url;
+    $("siteChip").textContent = lane.name;
+    $("rules").innerHTML = lane.rules.map(([big, small]) => `<div class="rule"><b>${esc(big)}</b><span>${esc(small)}</span></div>`).join("");
+    if (lane.action) $("action").innerHTML = `<span class="verb">${lane.action[0]}</span><span>${esc(lane.action[1])}</span>`;
+    $("requires").innerHTML = lane.requires.map((r) => `<code>${esc(r)}</code>`).join("");
     try {
       const r = JSON.parse(sessionStorage.getItem("rc_route") || "null");
-      if (r && r.lane === "agent" && r.reasons) document.getElementById("why").innerHTML = r.reasons.slice(0, 4).map((x) => `<li>${x.replace(/</g, "&lt;")}</li>`).join("");
+      const why = r && r.lane === "agent" ? (r.reasons || [r.reason]).filter(Boolean).slice(0, 4) : [];
+      $("why").innerHTML = why.length ? why.map((x) => `<li>${esc(x)}</li>`).join("") : `<li>no browser, or obvious automation</li>`;
     } catch (_) {}
+
     const d = await (await fetch(url)).json();
-    document.getElementById("json").textContent = JSON.stringify(d, null, 2);
-    const name = d.site || "Haarline";
-    document.title = `${name} agent lane`;
-    document.getElementById("h1").textContent = `⟲ ${name}: agent lane`;
-    if (d.message) document.getElementById("msg").textContent = d.message;
-    document.getElementById("back").addEventListener("click", async (e) => {
+    const raw = JSON.stringify(d, null, 2);
+    $("json").innerHTML = esc(raw).replace(/(&quot;(?:[^&]|&(?!quot;))*?&quot;)(\s*:)?|\b(true|false|null)\b|-?\b\d+(?:\.\d+)?\b/g,
+      (m, str, colon, lit) => str ? `<span class="${colon ? "k" : "s"}">${str}</span>${colon || ""}` : `<span class="${lit ? "b" : "n"}">${m}</span>`);
+    document.title = `${lane.name} agent lane`;
+    if (d.message) $("msg").textContent = d.message;
+
+    const copy = (btn, text) => navigator.clipboard.writeText(text).then(() => { const t = btn.textContent; btn.textContent = "Copied"; setTimeout(() => { btn.textContent = t; }, 1200); });
+    $("copyCurl").addEventListener("click", (e) => { e.preventDefault(); copy(e.target, `curl -s "${location.origin}${url}"`); });
+    $("copyJson").addEventListener("click", (e) => { e.preventDefault(); copy(e.target, raw); });
+
+    const goHuman = async (e) => {
       e.preventDefault();
       const p = Object.fromEntries(new URLSearchParams(qs));
       const api = site === "search" ? "/api/flights/route" : `/api/route/${site}`;
       const r = await (await fetch(api, { method: "POST", headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ query: p, telemetry: {}, override: "human" }) })).json();
       location.href = site === "search" ? r.redirect : `/${site}`;
-    });
+    };
+    $("back").addEventListener("click", goHuman);
+    $("backTop").addEventListener("click", goHuman);
   })();
   </script>
 </body>
