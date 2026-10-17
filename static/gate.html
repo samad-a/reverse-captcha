@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Reverse CAPTCHA: prove you're not human</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Archivo+Black&family=Inter:wght@400;600;800&family=JetBrains+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body class="gate">
+  <div class="bg-cards" aria-hidden="true"><span>⟲</span><span>⟳</span><span>⟲</span><span>⟳</span></div>
+
+  <header class="brand">
+    <div class="logo"><span class="rev">⟲</span> REVERSE<b>CAPTCHA</b></div>
+    <div class="tag">The agents' entrance · humans need not apply</div>
+  </header>
+
+  <main id="app">
+    <!-- STEP 1: landing -->
+    <section id="landing" class="card uno">
+      <div class="corner tl">⟲</div><div class="corner br">⟲</div>
+      <h1>Prove you're <span class="strike">human</span> <em>not human</em>.</h1>
+      <p class="lede">For twenty years websites made machines click on traffic lights. We flipped it.
+        This gate lets AI agents in and keeps humans out. It also works out <b>what kind</b> of visitor you are.</p>
+      <div class="captcha-box">
+        <div class="tick" id="tickbox"></div>
+        <div class="captcha-label">I am <b>not</b> a human</div>
+        <div class="captcha-logo"><span>⟲</span><small>reCAPTCHA<br>but backwards</small></div>
+      </div>
+      <button id="enterBtn" class="big-btn">Enter <span>→</span></button>
+      <p class="fine">By entering you agree to be judged by a machine. Telemetry: mouse, keys, timing. Nothing leaves this room.</p>
+    </section>
+
+    <!-- STEP 2: challenge (filled by JS only after Enter) -->
+    <section id="challenge" class="card hidden">
+      <div class="timer"><div id="timerBar"></div><span id="timerText"></span></div>
+      <div class="q-wrap">
+        <div class="q-label">Your task</div>
+        <div id="question" class="question"></div>
+        <form id="answerForm" autocomplete="off">
+          <label for="answer" class="sr">Answer</label>
+          <span class="pound">£</span><input id="answer" name="answer" inputmode="decimal" placeholder="your answer" autocomplete="off">
+          <button id="submitBtn" type="submit" class="big-btn small">Submit</button>
+        </form>
+      </div>
+      <article id="doc" class="doc"></article>
+    </section>
+
+    <!-- STEP 3: result -->
+    <section id="result" class="card hidden"></section>
+  </main>
+
+  <footer class="foot"><a href="/dashboard" target="_blank">live dashboard ↗</a></footer>
+  <script src="/static/gate.js"></script>
+</body>
+</html>

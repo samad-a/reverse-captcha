@@ -1,0 +1,6 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    { "name": "gate", "runtimeExecutable": ".venv/Scripts/python.exe", "runtimeArgs": ["run.py", "--reload"], "port": 8000 }
+  ]
+}
