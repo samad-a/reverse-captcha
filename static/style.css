@@ -130,7 +130,6 @@ pre.json { background: #111; color: #9ef09e; padding: 14px; border-radius: 14px;
 .mark.glen { background: #fff; color: #16242c; font: 800 26px "Public Sans", sans-serif; gap: 0; }
 .mark.glen span { color: #0d7c6c; }
 .mark.herald { background: #fbfaf7; color: #121212; font: 900 22px "Playfair Display", serif; }
-.mark.gate { background: var(--red); color: #fff; font: 400 36px "Archivo Black", sans-serif; }
 .hub b { display: block; font: 400 22px "Archivo Black"; margin: 6px 0; }
 .hub p { margin: 0; color: var(--muted); font-size: 15px; } .hub code { font-size: 12px; }
 
