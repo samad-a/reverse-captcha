@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🔄 Reverse CAPTCHA
+# Reverse CAPTCHA
 
 ### *Prove you're **not** human.*
 
@@ -22,32 +22,32 @@ For twenty years websites have made machines click on traffic lights. But the vi
 
 **Reverse CAPTCHA flips it.** Sites get a proper *agents' entrance*, and every visitor is classified as one of:
 
-| | Verdict | How we know |
-|---|---|---|
-| 🧠 | **HUMAN** | Curvy, hesitant mouse, sloppy clicks, can't read 1,900 words in 6 seconds |
-| 🕷️ | **SCRAPER / API AGENT** | Never touched the page: zero interaction events |
-| 🤖 | **BROWSER AGENT** | Teleporting cursor, dead-centre clicks, `navigator.webdriver`, obeys a hidden instruction in the DOM |
-| 👁️ | **VISION AGENT** | Robotic, answers correctly, but *misses* the hidden instruction because it only sees pixels |
+| Verdict | How we know |
+|---|---|
+| **HUMAN** | Curvy, hesitant mouse, sloppy clicks, can't read 1,900 words in 6 seconds |
+| **SCRAPER / API AGENT** | Never touched the page: zero interaction events |
+| **BROWSER AGENT** | Teleporting cursor, dead-centre clicks, `navigator.webdriver`, obeys a hidden instruction in the DOM |
+| **VISION AGENT** | Robotic, answers correctly, but *misses* the hidden instruction because it only sees pixels |
 
 ## Contents
 
-- [See it in action](#-see-it-in-action)
-- [How it works](#-how-it-works)
-- [Invisible routing on real sites](#-invisible-routing-on-real-sites)
-- [The demo sites](#-the-demo-sites)
-- [Live dashboard](#-live-dashboard)
-- [Quick start](#-quick-start)
-- [Running the agents](#-running-the-agents)
-- [Configuration](#-configuration)
-- [Trained classifier](#-trained-classifier-stretch)
-- [Project structure](#-project-structure)
+- [See it in action](#see-it-in-action)
+- [How it works](#how-it-works)
+- [Invisible routing on real sites](#invisible-routing-on-real-sites)
+- [The demo sites](#the-demo-sites)
+- [Live dashboard](#live-dashboard)
+- [Quick start](#quick-start)
+- [Running the agents](#running-the-agents)
+- [Configuration](#configuration)
+- [Trained classifier](#trained-classifier-stretch)
+- [Project structure](#project-structure)
 
-## 👀 See it in action
+## See it in action
 
 <table>
 <tr>
-<th width="50%">🧠 A human ticks the box…</th>
-<th width="50%">🤖 …an AI agent ticks the box</th>
+<th width="50%">A human ticks the box…</th>
+<th width="50%">…an AI agent ticks the box</th>
 </tr>
 <tr>
 <td><img src="docs/screenshots/human-blocked.png" alt="Access denied: suspiciously human"></td>
@@ -62,17 +62,17 @@ For twenty years websites have made machines click on traffic lights. But the vi
 </tr>
 </table>
 
-## 🧩 How it works
+## How it works
 
 ```mermaid
 flowchart LR
     V([Visitor]) --> G["Gate page<br/>silent telemetry"]
     G -->|tick the box| C{"Behaviour check<br/>/api/gate/check"}
-    C -->|human-like| H["🧠 Blocked<br/>Hall of Humans + demo-site picker"]
-    C -->|machine-like| Q["📄 6-second challenge<br/>1,900 words + hidden trap"]
+    C -->|human-like| H["Blocked<br/>Hall of Humans + demo-site picker"]
+    C -->|machine-like| Q["6-second challenge<br/>1,900 words + hidden trap"]
     Q --> S{"Grade answer, time,<br/>trap word + telemetry"}
     S -->|fail| H
-    S -->|pass| A["🤖 Agents' entrance<br/>structured JSON fare feed"]
+    S -->|pass| A["Agents' entrance<br/>structured JSON fare feed"]
 ```
 
 1. **Silent telemetry.** The gate (`/`) records pointer path, click offset from the button centre, key timings, paste, scroll, `isTrusted`, `navigator.webdriver` and touch.
@@ -84,12 +84,12 @@ flowchart LR
 
 | Visitor | Interaction events | Answer | Trap word | Verdict |
 |---|---|---|---|---|
-| Human | curvy, hesitant | slow / wrong | ✗ | **HUMAN** (blocked) |
-| `scraper_agent.py` | none at all | fast + correct | ✓ | **SCRAPER** |
-| `browser_agent.py` | teleporting, straight, dead-centre, webdriver | fast + correct | ✓ | **BROWSER AGENT** |
-| `vision_agent.py` | robotic | correct | ✗ | **VISION AGENT** |
+| Human | curvy, hesitant | slow / wrong | no | **HUMAN** (blocked) |
+| `scraper_agent.py` | none at all | fast + correct | yes | **SCRAPER** |
+| `browser_agent.py` | teleporting, straight, dead-centre, webdriver | fast + correct | yes | **BROWSER AGENT** |
+| `vision_agent.py` | robotic | correct | no | **VISION AGENT** |
 
-## 🚦 Invisible routing on real sites
+## Invisible routing on real sites
 
 On a real site you wouldn't show anyone a challenge. **`/flights`** is a mock flight-search site ("Haarline") with **no CAPTCHA at all**. The same telemetry runs silently, and pressing **Search** decides which lane you're in.
 
@@ -109,37 +109,37 @@ On a real site you wouldn't show anyone a challenge. **`/flights`** is a mock fl
 - **Scripts with no browser** that hit `/flights/results` directly are rerouted on the server *before any HTML is rendered* (307 → `/api/agents/search`, plus a `Link` header).
 - The challenge gate (`/`) becomes the **step-up check** for ambiguous visitors or high-stakes actions such as payment.
 
-```bash
+```powershell
 .venv\Scripts\python agents\flight_agent.py                      # browser agent searches, is rerouted, LLM picks a flight
 curl -L "http://127.0.0.1:8000/flights/results?from=EDI&to=KEF"   # script → straight to the JSON lane
 ```
 
-## 🌐 The demo sites
+## The demo sites
 
 Same idea, different industries. Every site at **`/sites`** uses the same passive routing (`app/sites.py`, `static/lane.js`): humans carry on in the normal UI, agents land on `/agents/<site>` with a structured API and **agent-specific house rules**.
 
 <table>
 <tr>
-<td width="33%"><img src="docs/screenshots/flights.png" alt="Haarline flight search"><br><b>✈️ Haarline</b> · flights</td>
-<td width="33%"><img src="docs/screenshots/contracts.png" alt="Inkwell contract signing"><br><b>✍️ Inkwell</b> · contract signing</td>
-<td width="33%"><img src="docs/screenshots/tickets.png" alt="Gigabox event tickets"><br><b>🎟️ Gigabox</b> · event tickets</td>
+<td width="33%"><img src="docs/screenshots/flights.png" alt="Haarline flight search"><br><b>Haarline</b> · flights</td>
+<td width="33%"><img src="docs/screenshots/contracts.png" alt="Inkwell contract signing"><br><b>Inkwell</b> · contract signing</td>
+<td width="33%"><img src="docs/screenshots/tickets.png" alt="Gigabox event tickets"><br><b>Gigabox</b> · event tickets</td>
 </tr>
 <tr>
-<td><img src="docs/screenshots/shop.png" alt="Thistle & Thread limited sneaker drop"><br><b>👟 Thistle & Thread</b> · limited drop</td>
-<td><img src="docs/screenshots/jobs.png" alt="Glenhire job board"><br><b>💼 Glenhire</b> · job board</td>
-<td><img src="docs/screenshots/news.png" alt="The Haar Herald news article"><br><b>📰 The Haar Herald</b> · news</td>
+<td><img src="docs/screenshots/shop.png" alt="Thistle & Thread limited sneaker drop"><br><b>Thistle & Thread</b> · limited drop</td>
+<td><img src="docs/screenshots/jobs.png" alt="Glenhire job board"><br><b>Glenhire</b> · job board</td>
+<td><img src="docs/screenshots/news.png" alt="The Haar Herald news article"><br><b>The Haar Herald</b> · news</td>
 </tr>
 </table>
 
 | Site | Human lane | Agent lane rules |
 |---|---|---|
-| ✍️ `/contracts` | Typed signature, recorded with evidence a person reviewed it | Structured clauses + risk flags. Agents sign **on behalf of a named principal** (recorded as a delegated agent signature, never a human one), must acknowledge flagged clauses, and **high-risk clauses need a human countersign** |
-| 🎟️ `/tickets` | Fan queue position | Separate agent queue, **max 2 tickets per principal**, named and non-transferable |
-| 👟 `/shop` | Add to basket | Product feed + checkout API, **1 pair per principal** during the drop |
-| 💼 `/jobs` | Easy apply as a human candidate | Applications are shown to employers as **AI-assisted, on behalf of the candidate**, need `candidate_confirmed`, and are capped at **3 per candidate per day** |
-| 📰 `/news` | Continue reading (with ads) | Licensed content API: headline and summary free; full text needs a licence with **attribution and no AI training use**; **3 free articles**, then **402 Payment Required** |
+| `/contracts` | Typed signature, recorded with evidence a person reviewed it | Structured clauses + risk flags. Agents sign **on behalf of a named principal** (recorded as a delegated agent signature, never a human one), must acknowledge flagged clauses, and **high-risk clauses need a human countersign** |
+| `/tickets` | Fan queue position | Separate agent queue, **max 2 tickets per principal**, named and non-transferable |
+| `/shop` | Add to basket | Product feed + checkout API, **1 pair per principal** during the drop |
+| `/jobs` | Easy apply as a human candidate | Applications are shown to employers as **AI-assisted, on behalf of the candidate**, need `candidate_confirmed`, and are capped at **3 per candidate per day** |
+| `/news` | Continue reading (with ads) | Licensed content API: headline and summary free; full text needs a licence with **attribution and no AI training use**; **3 free articles**, then **402 Payment Required** |
 
-```bash
+```powershell
 .venv\Scripts\python agents\site_agent.py contracts   # LLM reviews the contract, signs on behalf of the principal → pending countersign
 .venv\Scripts\python agents\site_agent.py tickets     # reserves 2, then tries to scalp 4 more → 429 quota
 .venv\Scripts\python agents\site_agent.py shop        # buys size 9, then tries a second pair → 429 drop limit
@@ -149,17 +149,17 @@ Same idea, different industries. Every site at **`/sites`** uses the same passiv
 
 Passive routing sends a visitor to the agent lane on `navigator.webdriver`, on zero interaction, or when the behaviour score is ≥ `ROUTE_AGENT_SCORE` (50, set high so real people are rarely misrouted).
 
-## 📊 Live dashboard
+## Live dashboard
 
 <img src="docs/screenshots/dashboard.png" alt="Live dashboard with HUMAN-MACHINE meter, recent attempts, Hall of Humans and lane traffic">
 
 **`/dashboard`** is the projector view, polling every second: a HUMAN ↔ MACHINE meter for the latest visitor, a live feed of attempts, the **Hall of Humans**, and **human vs agent lane** traffic across every demo site. Add `?demo=1` for bigger text.
 
-## 🚀 Quick start
+## Quick start
 
 Windows / PowerShell:
 
-```bash
+```powershell
 python -m venv .venv
 .venv\Scripts\python -m pip install -r requirements.txt
 .venv\Scripts\python -m playwright install chromium
@@ -169,11 +169,11 @@ copy .env.example .env      # add NEBIUS_API_KEY (or ANTHROPIC_API_KEY + LLM_PRO
 
 Then open:
 
-| | URL |
+| Page | URL |
 |---|---|
-| 🚪 Gate | http://localhost:8000/ |
-| 📊 Dashboard | http://localhost:8000/dashboard |
-| 🌐 Demo sites | http://localhost:8000/sites |
+| Gate | http://localhost:8000/ |
+| Dashboard | http://localhost:8000/dashboard |
+| Demo sites | http://localhost:8000/sites |
 
 Others on the same wifi can use `http://<your-ip>:8000/`. Restart after editing config (on Windows, `--reload` can hang).
 
@@ -181,15 +181,15 @@ Anyone on the wifi can use the gate and the demo sites. Only the laptop running 
 
 ### Tests
 
-```bash
+```powershell
 .venv\Scripts\python -m pytest -q
 ```
 
 Covers rules, features, agent-lane quotas and the HTTP API. No LLM or network needed.
 
-## 🤖 Running the agents
+## Running the agents
 
-```bash
+```powershell
 .venv\Scripts\python agents\scraper_agent.py     # plain HTTP, no browser → SCRAPER
 .venv\Scripts\python agents\browser_agent.py     # visible Chromium, reads the DOM → BROWSER AGENT
 .venv\Scripts\python agents\vision_agent.py      # screenshots only → VISION AGENT
@@ -200,7 +200,7 @@ Covers rules, features, agent-lane quotas and the HTTP API. No LLM or network ne
 - If Playwright's Chromium isn't downloaded, the agents fall back to the system's Edge or Chrome. Force one with `AGENT_BROWSER=msedge`.
 - `LLM_PROVIDER=stub` runs the plumbing offline (it always answers wrong).
 
-> **No terminal needed.** On the demo laptop, every demo site's top bar has a **🤖 Send an agent** button, and the dashboard header has **Browser / Scraper / Vision** buttons. They run the same scripts in a visible browser and stream the output into a panel on the page. They only appear on localhost (or with `ADMIN_KEY`), and only one agent runs at a time.
+> **No terminal needed.** On the demo laptop, every demo site's top bar has a **Send an agent** button, and the dashboard header has **Browser / Scraper / Vision** buttons. They run the same scripts in a visible browser and stream the output into a panel on the page. They only appear on localhost (or with `ADMIN_KEY`), and only one agent runs at a time.
 
 **LLMs.** `agents/llm.py` wraps Nebius Token Factory (OpenAI-compatible) and Anthropic; switch in `.env`.
 
@@ -211,7 +211,7 @@ Covers rules, features, agent-lane quotas and the HTTP API. No LLM or network ne
 
 Agents use *hedged requests*: if the LLM hasn't answered after `HEDGE_AFTER_S`, they fire a duplicate request and take whichever answers first.
 
-## 🔧 Configuration
+## Configuration
 
 Everything lives in [`app/config.py`](app/config.py), and most values can be overridden in `.env`:
 
@@ -220,23 +220,23 @@ Everything lives in [`app/config.py`](app/config.py), and most values can be ove
 | `TIME_LIMIT_S` | `6.0` | Challenge time limit, measured on the server |
 | `VISION_TIME_LIMIT_S` | `15.0` | Grace period only for robotic visitors who didn't take the bait |
 | `ROUTE_AGENT_SCORE` | `50` | Robot score at which passive routing sends you to the agent lane |
-| `RULES` | | Per-rule weights and thresholds for the classifier |
+| `RULES` | see file | Per-rule weights and thresholds for the classifier |
 | `LLM_PROVIDER` | `nebius` | `nebius`, `anthropic` or `stub` |
-| `ADMIN_KEY` | | Lets a non-localhost machine reset the dashboard and run agents |
+| `ADMIN_KEY` | unset | Lets a non-localhost machine reset the dashboard and run agents |
 
-## 🧪 Trained classifier (stretch)
+## Trained classifier (stretch)
 
 Every attempt's feature vector is logged to `data.sqlite3`. Agents tag their own runs (`true_label`, accepted only from the demo machine or with `ADMIN_KEY`). Humans are labelled by the verdict, or you can force a label with `/?label=HUMAN`.
 
-```bash
+```powershell
 .venv\Scripts\python ml\train.py     # picks RandomForest or LogReg by CV, writes ml/model.joblib + importances
 ```
 
 The running server hot-loads the model. It chooses the label, while access is still decided by the challenge rules, and the dashboard shows feature importances. Delete `ml/model.joblib` to go back to rules only.
 
-## 📁 Project structure
+## Project structure
 
-```
+```text
 reverse-captcha/
 ├── app/            FastAPI server
 │   ├── main.py         routes: gate, challenge, submit, dashboard, agent lanes
@@ -246,7 +246,7 @@ reverse-captcha/
 │   ├── sites.py        demo sites and their agent-lane rules
 │   └── config.py       every threshold in one place
 ├── agents/         scraper, browser, vision, flight and site agents + LLM wrapper
-├── static/         gate, dashboard and the five demo sites (plain HTML/CSS/JS)
+├── static/         gate, dashboard and the six demo sites (plain HTML/CSS/JS)
 ├── ml/             classifier training + LLM benchmarks
 ├── tests/          pytest suite
 └── docs/           screenshots + take_screenshots.py to regenerate them
@@ -256,6 +256,6 @@ reverse-captcha/
 
 <div align="center">
 
-🎤 Giving a demo? See **[DEMO.md](DEMO.md)** for the 4-minute script and likely questions.
+Giving a demo? See **[DEMO.md](DEMO.md)** for the 4-minute script and likely questions.
 
 </div>

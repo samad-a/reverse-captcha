@@ -39,7 +39,7 @@
 
 ## 4c. Same idea, other industries (`/sites`), about 1 minute
 Open http://localhost:8000/sites, then run one or two of these, depending on which judge you're talking to:
-- **Wordsmith (legal):** `.venv\Scripts\python agents\site_agent.py contracts`. The agent gets rerouted, gpt-oss flags clauses 3, 4 and 7 as risky, and it signs **on behalf of** its principal. The site records a *delegated agent signature* and returns `pending_human_countersign` because clause 7 is high risk. "You always know whether a human or an agent signed, and on whose behalf."
+- **Legal:** `.venv\Scripts\python agents\site_agent.py contracts`. The agent gets rerouted, gpt-oss flags clauses 3, 4 and 7 as risky, and it signs **on behalf of** its principal. The site records a *delegated agent signature* and returns `pending_human_countersign` because clause 7 is high risk. "You always know whether a human or an agent signed, and on whose behalf."
 - **Ticketing:** `.venv\Scripts\python agents\site_agent.py tickets`. It reserves 2 tickets, then tries to scalp 4 more and gets **429 quota**. "Bots get their own queue and can't crowd out fans."
 - **Shopping:** `.venv\Scripts\python agents\site_agent.py shop`. It buys the limited drop, then tries a second pair and gets **429 drop limit**.
 - **Job boards:** `.venv\Scripts\python agents\site_agent.py jobs`. gpt-oss picks the best-fit job for the candidate and writes a cover note. The application is shown to the employer as *"AI-assisted, on behalf of …"*. Then it tries to mass-apply to every other job: 2 more go through, then **429 daily cap**. "Real candidates still get read."
@@ -51,7 +51,7 @@ Open http://localhost:8000/sites, then run one or two of these, depending on whi
 - It answers correctly but **misses the hidden instruction**, because it reads pixels, not markup. The trap word is how we tell DOM agents from vision agents.
 
 ## Close (15s)
-> "Every verdict is explainable: you just saw the exact signals. Thresholds live in one config file, and we log every attempt to train a classifier (show the feature importances panel if trained). For Skyscanner: an agents' entrance for fare search. For Wordsmith: a way to know whether a contract was read by a human or an agent. For Nebius: every agent you saw today runs on Nebius Token Factory, with gpt-oss-120b answering in about 1 second."
+> "Every verdict is explainable: you just saw the exact signals. Thresholds live in one config file, and we log every attempt to train a classifier (show the feature importances panel if trained). For travel search: an agents' entrance for fares. For legal tech: a way to know whether a contract was read by a human or an agent. For Nebius: every agent you saw today runs on Nebius Token Factory, with gpt-oss-120b answering in about 1 second."
 
 ## Likely questions
 - **Can't a human just paste it into ChatGPT?** Copy, paste, prompt and type back within 6s is very hard. If they manage it, the copied text can carry the hidden instruction to the LLM. That flags them as a DOM agent, which is arguably correct: at that point it *is* an agent answering.
