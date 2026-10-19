@@ -5,3 +5,4 @@ data.sqlite3*
 *.pyc
 ml/model.joblib
 ml/importances.json
+.pytest_cache/
