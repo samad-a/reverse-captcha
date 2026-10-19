@@ -11,6 +11,7 @@
 ![Playwright](https://img.shields.io/badge/Playwright-2EAD33?logo=playwright&logoColor=white)
 ![scikit-learn](https://img.shields.io/badge/scikit--learn-F7931E?logo=scikitlearn&logoColor=white)
 ![LLM](https://img.shields.io/badge/LLM-Nebius%20%7C%20Anthropic-E2231A)
+[![License: PolyForm Noncommercial](https://img.shields.io/badge/license-PolyForm%20Noncommercial-555)](LICENSE)
 
 <img src="docs/screenshots/gate.png" alt="The Reverse CAPTCHA gate: 'Prove you're not human' with an 'I am not a human' checkbox" width="820">
 
@@ -41,6 +42,7 @@ For twenty years websites have made machines click on traffic lights. But the vi
 - [Configuration](#configuration)
 - [Trained classifier](#trained-classifier-stretch)
 - [Project structure](#project-structure)
+- [License](#license)
 
 ## See it in action
 
@@ -251,6 +253,14 @@ reverse-captcha/
 ├── tests/          pytest suite
 └── docs/           screenshots + take_screenshots.py to regenerate them
 ```
+
+## License
+
+Released under the [PolyForm Noncommercial License 1.0.0](LICENSE).
+
+- **Free for noncommercial use:** personal projects, learning, research, hobby use, and use by charities, schools and public bodies. You can use, change and share it.
+- **Keep the credit:** anything you share must include the license and its `Required Notice` line crediting the original author.
+- **No commercial use** without permission. If you'd like to use Reverse CAPTCHA commercially, open an issue to ask about a commercial license.
 
 ---
 
